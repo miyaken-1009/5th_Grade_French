@@ -67,6 +67,7 @@
   .hint-btn:hover { border-color:var(--accent-dim); color:var(--accent); }
   .submit-btn, .next-action-btn { flex:1; background:var(--accent); color:#fff; border:none; text-align:center; }
   .submit-btn:hover, .next-action-btn:hover { background:var(--accent-dim); }
+  .submit-btn:disabled, .next-action-btn:disabled { background:var(--border); color:var(--text-muted); cursor:not-allowed; }
   
   .feedback { display:none; padding:16px 20px; border-radius:4px; font-size:14px; line-height:1.7; margin-top:8px; }
   .feedback.visible { display:block; animation:fadeUp .3s ease; }
@@ -788,7 +789,6 @@ function submitAnswer() {
   prog.introduced = true;
   log.push({ fr: w.fr, before, after, correct: isCorrect });
 
-
   input.classList.add(isCorrect ? 'correct' : 'wrong');
   
   saveProgress();
@@ -823,8 +823,6 @@ function submitAnswer() {
       }
     });
   }
-
-
 }
 
 function nextWord() { idx++; render(); }
@@ -874,6 +872,7 @@ document.addEventListener('keydown', e => {
     }
   }
 });
+
 renderDayInfo();
 
 if ('serviceWorker' in navigator) {
