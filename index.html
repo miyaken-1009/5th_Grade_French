@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>仏語 穴埋め</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2a2520">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="仏語 穴埋め">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Noto+Serif+JP:wght@300;400;600&display=swap');
+  :root {
+    --bg:#f9f8f6; --surface:#f4f3f0; --card:#ffffff; --border:#e0ddd8;
+    --accent:#2a2520; --accent-dim:#4a433c; --text:#1a1815; --text-dim:#3d3830; --text-muted:#8a8278;
+    --red:#b03020; --green:#2a7848; --blue:#2a5a90; --orange:#b86820;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Noto Serif JP', serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; }
+  header { width:100%; max-width:620px; padding:32px 24px 0; display:flex; align-items:baseline; gap:16px; }
+  .logo { font-family:'Playfair Display', serif; font-size:20px; letter-spacing:0.04em; color:var(--accent); }
+  .logo span { font-style:italic; }
+  .day-tag { margin-left:auto; font-size:12px; color:var(--text-muted); letter-spacing:0.08em; }
+  .day-tag b { color:var(--text-dim); }
+
+  .progress-wrap { width:100%; max-width:620px; padding:16px 24px 0; }
+  .progress-track { height:2px; background:var(--border); border-radius:1px; overflow:hidden; }
+  .progress-fill { height:100%; background:linear-gradient(90deg,#4a433c,var(--accent)); transition:width .5s ease; }
+
+  main { width:100%; max-width:620px; padding:36px 24px 60px; flex:1; display:flex; flex-direction:column; align-items:center; }
+
+  /* Day info screen */
+  .day-info { text-align:center; width:100%; }
+  .day-info .big { font-family:'Playfair Display', serif; font-size:52px; color:var(--accent); margin-bottom:6px; }
+  .day-info h2 { font-size:16px; font-weight:400; color:var(--text-muted); margin-bottom:32px; }
+  .quota-row { display:flex; gap:12px; margin-bottom:28px; }
+  .quota-box { flex:1; border:1px solid var(--border); border-radius:4px; padding:18px 10px; background:var(--card); }
+  .quota-box .n { font-family:'Playfair Display', serif; font-size:30px; color:var(--text); }
+  .quota-box .l { font-size:10px; color:var(--text-muted); letter-spacing:0.1em; text-transform:uppercase; margin-top:4px; }
+  .quota-note { font-size:11.5px; color:var(--text-muted); line-height:1.7; margin-bottom:26px; text-align:left; background:var(--surface); border:1px solid var(--border); padding:14px 16px; border-radius:4px; }
+  .start-btn { width:100%; padding:16px; background:var(--accent); color:#fff; border:none; border-radius:4px; font-family:'Playfair Display', serif; font-size:16px; cursor:pointer; }
+  .start-btn:hover { background:var(--accent-dim); }
+  .start-btn:disabled { opacity:0.4; cursor:default; }
+
+  .level-badge { font-size:10px; letter-spacing:0.18em; text-transform:uppercase; padding:4px 12px; border-radius:20px; margin-bottom:22px; border:1px solid; }
+  .level-badge.new { color:var(--accent); border-color:rgba(42,37,32,0.25); background:rgba(42,37,32,0.04); }
+  .level-badge.review { color:var(--blue); border-color:rgba(42,90,144,0.35); background:rgba(42,90,144,0.06); }
+
+  .card { width:100%; background:var(--card); border:1px solid var(--border); border-radius:4px; padding:44px 40px 36px; position:relative; }
+  .card::before { content:''; position:absolute; top:0; left:0; width:3px; height:100%; background:linear-gradient(180deg,var(--accent),transparent); border-radius:4px 0 0 4px; }
+  .pos-tag { font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--text-muted); margin-bottom:18px; font-family:'Playfair Display', serif; font-style:italic; }
+  .jp-sentence { font-size:22px; font-weight:300; color:var(--accent); line-height:1.6; margin-bottom:28px; letter-spacing:0.02em; }
+  .fr-sentence { font-family:'Playfair Display', serif; font-size:22px; color:var(--text-dim); line-height:1.7; margin-bottom:22px; }
+  .blank-slot { display:inline-block; min-width:90px; border-bottom:2px solid var(--accent); text-align:center; color:var(--text-muted); font-style:italic; padding:0 4px; }
+
+  .input-row { display:flex; gap:8px; margin-bottom:14px; }
+  .answer-input { flex:1; font-family:'Noto Serif JP', serif; font-size:16px; padding:12px 14px; border:1px solid var(--border); border-radius:4px; background:var(--surface); color:var(--text); outline:none; transition:border-color .2s; }
+  .answer-input:focus { border-color:var(--accent-dim); }
+  .answer-input.correct { border-color:var(--green); background:rgba(42,120,72,0.06); }
+  .answer-input.wrong { border-color:var(--red); background:rgba(176,48,32,0.06); }
+
+  .accent-row { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:22px; }
+  .accent-btn { font-family:'Playfair Display', serif; font-size:14px; padding:6px 11px; border:1px solid var(--border); border-radius:3px; background:var(--surface); color:var(--text-dim); cursor:pointer; transition:all .15s; }
+  .accent-btn:hover { border-color:var(--accent-dim); color:var(--accent); }
+
+  .action-row { display:flex; gap:10px; }
+  .hint-btn, .submit-btn { font-family:'Noto Serif JP', serif; font-size:13px; letter-spacing:0.05em; padding:12px 20px; border-radius:4px; cursor:pointer; border:1px solid var(--border); background:transparent; color:var(--text-dim); transition:all .18s; }
+  .hint-btn:hover { border-color:var(--accent-dim); color:var(--accent); }
+  .submit-btn { flex:1; background:var(--accent); color:#fff; border:none; }
+  .submit-btn:hover { background:var(--accent-dim); }
+  .hint-text { font-size:12px; color:var(--text-muted); margin-top:-10px; margin-bottom:18px; letter-spacing:0.04em; }
+
+  .feedback { display:none; margin-top:20px; padding:16px 20px; border-radius:4px; font-size:14px; line-height:1.7; }
+  .feedback.visible { display:block; animation:fadeUp .3s ease; }
+  .feedback.correct { background:rgba(42,120,72,0.06); border:1px solid rgba(42,120,72,0.3); color:var(--green); }
+  .feedback.wrong { background:rgba(176,48,32,0.06); border:1px solid rgba(176,48,32,0.3); color:var(--red); }
+  .feedback .answer-reveal { font-family:'Playfair Display', serif; font-size:17px; margin-top:6px; color:var(--text-dim); }
+
+  .next-btn { margin-top:20px; padding:12px 28px; background:var(--accent); color:#fff; border:none; border-radius:4px; font-family:'Playfair Display', serif; font-size:15px; cursor:pointer; display:none; }
+  .next-btn.visible { display:inline-block; animation:fadeUp .3s ease; }
+  .next-btn:hover { background:var(--accent-dim); }
+
+  @keyframes fadeUp { from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+
+  .summary { text-align:center; width:100%; }
+  .summary .big { font-family:'Playfair Display', serif; font-size:52px; color:var(--accent); margin-bottom:14px; }
+  .summary h2 { font-size:18px; font-weight:400; color:var(--text-dim); margin-bottom:22px; }
+  .summary-table { width:100%; text-align:left; border-collapse:collapse; margin-bottom:24px; }
+  .summary-table th, .summary-table td { padding:9px 10px; border-bottom:1px solid var(--border); font-size:13px; }
+  .summary-table th { color:var(--text-muted); font-weight:400; letter-spacing:0.05em; text-transform:uppercase; font-size:10px; }
+  .lv-pill { display:inline-block; padding:2px 9px; border-radius:20px; font-size:11px; }
+  .lv-pill.up { background:rgba(42,120,72,0.08); color:var(--green); }
+  .lv-pill.reset { background:rgba(176,48,32,0.08); color:var(--red); }
+  .restart-btn { width:100%; padding:14px; background:var(--accent); color:#fff; border:none; border-radius:4px; font-family:'Playfair Display', serif; font-size:15px; cursor:pointer; }
+  .restart-btn:hover { background:var(--accent-dim); }
+
+  .empty-note { text-align:center; padding:40px 20px; color:var(--text-muted); font-size:13px; line-height:1.8; }
+
+  /* ===== タッチ操作：全ボタン共通 ===== */
+  button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+
+  /* ===== スマホ最適化 ===== */
+  @media (max-width: 540px) {
+    header { padding: 20px 16px 0; }
+    main { padding: 24px 16px 80px; }
+    .progress-wrap { padding: 12px 16px 0; }
+
+    /* カードのパディングを縮小 */
+    .card { padding: 28px 20px 24px; }
+
+    /* 日本語文・フランス語文サイズ調整 */
+    .jp-sentence { font-size: 19px; }
+    .fr-sentence { font-size: 19px; }
+
+    /* 入力欄を大きく（タッチしやすく） */
+    .answer-input { font-size: 18px; padding: 14px 12px; }
+
+    /* アクセント文字ボタンを大きく */
+    .accent-btn { font-size: 18px; padding: 10px 12px; min-height: 44px; min-width: 44px; }
+
+    /* アクションボタンを縦並び */
+    .action-row { flex-direction: column; gap: 10px; }
+    .hint-btn, .submit-btn { padding: 16px; font-size: 15px; width: 100%; }
+
+    /* 次へボタン */
+    .next-btn { width: 100%; padding: 16px; font-size: 16px; text-align: center; }
+
+    /* Day info画面 */
+    .day-info .big { font-size: 40px; }
+    .start-btn { padding: 18px; font-size: 17px; }
+    .quota-box .n { font-size: 26px; }
+    .quota-note { font-size: 12px; }
+
+    /* サマリー */
+    .summary .big { font-size: 40px; }
+    .summary-table th, .summary-table td { font-size: 12px; padding: 8px 6px; }
+    .restart-btn { padding: 16px; font-size: 15px; }
+  }
+
+  /* iPhone ノッチ対応 */
+  body { padding-bottom: env(safe-area-inset-bottom); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span>Français</span> 穴埋め v2</div>
+  <div class="day-tag">Day <b id="day-num">1</b></div>
+</header>
+<div class="progress-wrap"><div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div></div>
+<main id="main-area"></main>
+
+<script>
+/* =====================================================================
+   ★データ設計メモ（401語追加時の指針）
+   - WORDS：単語の内容（静的データ）。id と masterOrder を持つ。
+     401語を追記する際は、この配列の末尾にオブジェクトを追加していくだけでよい。
+     masterOrder は「新規語をどの順で繰り出すか」の通し番号（並べ替え厳禁）。
+   - fillProgress：学習の進捗（動的データ）。id をキーにした別オブジェクトで
+     保持する（本番では localStorage / window.storage に保存）。
+     WORDS配列の並び順やインデックスに一切依存しないため、
+     途中に単語を挿入しても既存の進捗データは壊れない。
+   ===================================================================== */
+
+const LEVEL_DAYS = [1, 3, 7, 30, 90];
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// ★本番想定：復習上限50・1日合計100。10語デモ用に縮小（復習3・合計5）。
+const REVIEW_CAP = 50;
+const DAILY_TOTAL = 100;
+
+const WORDS = [
+  { id:"n0001", fr:"femme", jp:"女、妻", pos:"名詞（女）", ex_fr:"C'est une femme indépendante.", ex_jp:"彼女は自立した女性です。", blank:"femme", masterOrder:1 },
+  { id:"n0002", fr:"mère", jp:"母", pos:"名詞（女）", ex_fr:"Ma mère habite à Paris.", ex_jp:"私の母はパリに住んでいます。", blank:"mère", masterOrder:2 },
+  { id:"n0003", fr:"montagne", jp:"山", pos:"名詞（女）", ex_fr:"Nous allons à la montagne.", ex_jp:"私たちは山に行きます。", blank:"montagne", masterOrder:3 },
+  { id:"n0004", fr:"fleur", jp:"花", pos:"名詞（女）", ex_fr:"Cette fleur sent très bon.", ex_jp:"この花はとても良い香りがします。", blank:"fleur", masterOrder:4 },
+  { id:"n0005", fr:"musique", jp:"音楽", pos:"名詞（女）", ex_fr:"J'écoute de la musique classique.", ex_jp:"私はクラシック音楽を聴きます。", blank:"musique", masterOrder:5 },
+  { id:"n0006", fr:"danse", jp:"ダンス", pos:"名詞（女）", ex_fr:"Elle apprend la danse.", ex_jp:"彼女はダンスを習っています。", blank:"danse", masterOrder:6 },
+  { id:"n0007", fr:"salle", jp:"部屋、ホール", pos:"名詞（女）", ex_fr:"La salle est très grande.", ex_jp:"その部屋はとても大きいです。", blank:"salle", masterOrder:7 },
+  { id:"n0008", fr:"fenêtre", jp:"窓", pos:"名詞（女）", ex_fr:"Fermez la fenêtre, s'il vous plaît.", ex_jp:"窓を閉めてください。", blank:"fenêtre", masterOrder:8 },
+  { id:"n0009", fr:"table", jp:"テーブル", pos:"名詞（女）", ex_fr:"Le livre est sur la table.", ex_jp:"本はテーブルの上にあります。", blank:"table", masterOrder:9 },
+  { id:"n0010", fr:"chaise", jp:"椅子", pos:"名詞（女）", ex_fr:"Prenez une chaise.", ex_jp:"椅子にお座りください。", blank:"chaise", masterOrder:10 },
+  { id:"n0011", fr:"porte", jp:"ドア", pos:"名詞（女）", ex_fr:"Ouvrez la porte.", ex_jp:"ドアを開けてください。", blank:"porte", masterOrder:11 },
+  { id:"n0012", fr:"saison", jp:"季節", pos:"名詞（女）", ex_fr:"Quelle est votre saison préférée ?", ex_jp:"あなたの好きな季節は何ですか？", blank:"saison", masterOrder:12 },
+  { id:"n0013", fr:"semaine", jp:"週", pos:"名詞（女）", ex_fr:"Je pars en vacances la semaine prochaine.", ex_jp:"来週、バカンスに出発します。", blank:"semaine", masterOrder:13 },
+  { id:"n0014", fr:"date / heure", jp:"日付 / 時間", pos:"名詞（女）", ex_fr:"Quelle est la date d'aujourd'hui ? / Quelle heure est-il ?", ex_jp:"今日の日付は何ですか？ / 今何時ですか？", blank:"date / heure", masterOrder:14 },
+  { id:"n0015", fr:"minute", jp:"分", pos:"名詞（女）", ex_fr:"Attendez une minute.", ex_jp:"1分待ってください。", blank:"minute", masterOrder:15 },
+  { id:"n0016", fr:"seconde", jp:"秒", pos:"名詞（女）", ex_fr:"Il reste dix secondes.", ex_jp:"残り10秒です。", blank:"seconde", masterOrder:16 },
+  { id:"n0017", fr:"fille", jp:"娘、女の子", pos:"名詞（女）", ex_fr:"Ma fille a dix ans.", ex_jp:"私の娘は10歳です。", blank:"fille", masterOrder:17 },
+  { id:"n0018", fr:"tante", jp:"叔母", pos:"名詞（女）", ex_fr:"Ma tante vient nous voir demain.", ex_jp:"明日、叔母が私たちに会いに来ます。", blank:"tante", masterOrder:18 },
+  { id:"n0019", fr:"grand-mère", jp:"祖母", pos:"名詞（女）", ex_fr:"Ma grand-mère prépare un gâteau.", ex_jp:"祖母がケーキを作っています。", blank:"grand-mère", masterOrder:19 },
+  { id:"n0020", fr:"famille", jp:"家族", pos:"名詞（女）", ex_fr:"J'ai une grande famille.", ex_jp:"私は大家族です。", blank:"famille", masterOrder:20 },
+  { id:"n0021", fr:"course", jp:"買い物、競走", pos:"名詞（女）", ex_fr:"Je dois faire les courses.", ex_jp:"買い物をしなければなりません。", blank:"course", masterOrder:21 },
+  { id:"n0022", fr:"cuisine", jp:"台所、料理", pos:"名詞（女）", ex_fr:"J'aime la cuisine française.", ex_jp:"私はフランス料理が好きです。", blank:"cuisine", masterOrder:22 },
+  { id:"n0023", fr:"maison", jp:"家", pos:"名詞（女）", ex_fr:"C'est ma nouvelle maison.", ex_jp:"これが私の新しい家です。", blank:"maison", masterOrder:23 },
+  { id:"n0024", fr:"clé", jp:"鍵", pos:"名詞（女）", ex_fr:"J'ai perdu mes clés.", ex_jp:"鍵をなくしました。", blank:"clé", masterOrder:24 },
+  { id:"n0025", fr:"adresse", jp:"住所", pos:"名詞（女）", ex_fr:"Donnez-moi votre adresse.", ex_jp:"あなたの住所を教えてください。", blank:"adresse", masterOrder:25 },
+  { id:"n0026", fr:"droite", jp:"右", pos:"名詞（女）", ex_fr:"Tournez à droite.", ex_jp:"右に曲がってください。", blank:"droite", masterOrder:26 },
+  { id:"n0027", fr:"gauche", jp:"左", pos:"名詞（女）", ex_fr:"Prenez la première rue à gauche.", ex_jp:"最初の通りを左に進んでください。", blank:"gauche", masterOrder:27 },
+  { id:"n0028", fr:"tête", jp:"頭", pos:"名詞（女）", ex_fr:"J'ai mal à la tête.", ex_jp:"頭が痛いです。", blank:"tête", masterOrder:28 },
+  { id:"n0029", fr:"dent", jp:"歯", pos:"名詞（女）", ex_fr:"Il doit aller chez le dentiste pour sa dent.", ex_jp:"彼は歯のために歯医者に行かなければなりません。", blank:"dent", masterOrder:29 },
+  { id:"n0030", fr:"jambe", jp:"脚", pos:"名詞（女）", ex_fr:"Elle s'est cassé la jambe.", ex_jp:"彼女は脚を骨折しました。", blank:"jambe", masterOrder:30 },
+  { id:"n0031", fr:"école", jp:"学校", pos:"名詞（女）", ex_fr:"Les enfants sont à l'école.", ex_jp:"子供たちは学校にいます。", blank:"école", masterOrder:31 },
+  { id:"n0032", fr:"église", jp:"教会", pos:"名詞（女）", ex_fr:"Il y a une vieille église ici.", ex_jp:"ここに古い教会があります。", blank:"église", masterOrder:32 },
+  { id:"n0033", fr:"poste", jp:"郵便局", pos:"名詞（女）", ex_fr:"Je vais à la poste.", ex_jp:"郵便局に行きます。", blank:"poste", masterOrder:33 },
+  { id:"n0034", fr:"lettre", jp:"手紙", pos:"名詞（女）", ex_fr:"J'écris une lettre à mon ami.", ex_jp:"友人に手紙を書いています。", blank:"lettre", masterOrder:34 },
+  { id:"n0035", fr:"photo", jp:"写真", pos:"名詞（女）", ex_fr:"Puis-je prendre une photo ?", ex_jp:"写真を撮ってもいいですか？", blank:"photo", masterOrder:35 },
+  { id:"n0036", fr:"enveloppe", jp:"封筒", pos:"名詞（女）", ex_fr:"Mettez la lettre dans l'enveloppe.", ex_jp:"手紙を封筒に入れてください。", blank:"enveloppe", masterOrder:36 },
+  { id:"n0037", fr:"montre", jp:"腕時計", pos:"名詞（女）", ex_fr:"C'est une belle montre.", ex_jp:"きれいな腕時計ですね。", blank:"montre", masterOrder:37 },
+  { id:"n0038", fr:"cravate", jp:"ネクタイ", pos:"名詞（女）", ex_fr:"Il porte une cravate rouge.", ex_jp:"彼は赤いネクタイをしています。", blank:"cravate", masterOrder:38 },
+  { id:"n0039", fr:"jupe", jp:"スカート", pos:"名詞（女）", ex_fr:"Elle a acheté une nouvelle jupe.", ex_jp:"彼女は新しいスカートを買いました。", blank:"jupe", masterOrder:39 },
+  { id:"n0040", fr:"robe", jp:"ドレス、ワンピース", pos:"名詞（女）", ex_fr:"Cette robe vous va bien.", ex_jp:"そのワンピースはあなたに似合っています。", blank:"robe", masterOrder:40 },
+  { id:"n0041", fr:"campagne", jp:"田舎", pos:"名詞（女）", ex_fr:"Ils habitent à la campagne.", ex_jp:"彼らは田舎に住んでいます。", blank:"campagne", masterOrder:41 },
+  { id:"n0042", fr:"ville", jp:"町、都市", pos:"名詞（女）", ex_fr:"Paris est une grande ville.", ex_jp:"パリは大きな都市です。", blank:"ville", masterOrder:42 },
+  { id:"n0043", fr:"capitale", jp:"首都", pos:"名詞（女）", ex_fr:"Tokyo est la capitale du Japon.", ex_jp:"東京は日本の首都です。", blank:"capitale", masterOrder:43 },
+  { id:"n0044", fr:"place", jp:"広場、席", pos:"名詞（女）", ex_fr:"Cette place est libre ?", ex_jp:"この席は空いていますか？", blank:"place", masterOrder:44 },
+  { id:"n0045", fr:"université", jp:"大学", pos:"名詞（女）", ex_fr:"Il étudie à l'université.", ex_jp:"彼は大学で勉強しています。", blank:"université", masterOrder:45 },
+  { id:"n0046", fr:"bibliothèque", jp:"図書館", pos:"名詞（女）", ex_fr:"Je travaille à la bibliothèque.", ex_jp:"私は図書館で勉強（仕事）します。", blank:"bibliothèque", masterOrder:46 },
+  { id:"n0047", fr:"piscine", jp:"プール", pos:"名詞（女）", ex_fr:"Nous allons nager à la piscine.", ex_jp:"私たちはプールに泳ぎに行きます。", blank:"piscine", masterOrder:47 },
+  { id:"n0048", fr:"pharmacie", jp:"薬局", pos:"名詞（女）", ex_fr:"Où est la pharmacie la plus proche ?", ex_jp:"一番近い薬局はどこですか？", blank:"pharmacie", masterOrder:48 },
+  { id:"n0049", fr:"gare", jp:"駅", pos:"名詞（女）", ex_fr:"Le train arrive à la gare.", ex_jp:"電車が駅に到着します。", blank:"gare", masterOrder:49 },
+  { id:"n0050", fr:"valise", jp:"スーツケース", pos:"名詞（女）", ex_fr:"Ma valise est lourde.", ex_jp:"私のスーツケースは重いです。", blank:"valise", masterOrder:50 },
+  { id:"n0051", fr:"carte", jp:"カード、地図", pos:"名詞（女）", ex_fr:"Je paie par carte.", ex_jp:"カードで支払います。", blank:"carte", masterOrder:51 },
+  { id:"n0052", fr:"boisson", jp:"飲み物", pos:"名詞（女）", ex_fr:"Quelle boisson désirez-vous ?", ex_jp:"どのお飲み物をご希望ですか？", blank:"boisson", masterOrder:52 },
+  { id:"n0053", fr:"bière", jp:"ビール", pos:"名詞（女）", ex_fr:"Je voudrais une bière, s'il vous plaît.", ex_jp:"ビールを1杯お願いします。", blank:"bière", masterOrder:53 },
+  { id:"n0054", fr:"carafe", jp:"水差し", pos:"名詞（女）", ex_fr:"Une carafe d'eau, s'il vous plaît.", ex_jp:"お水の入ったピッチャーをお願いします。", blank:"carafe", masterOrder:54 },
+  { id:"n0055", fr:"soupe", jp:"スープ", pos:"名詞（女）", ex_fr:"La soupe est très chaude.", ex_jp:"スープはとても熱いです。", blank:"soupe", masterOrder:55 },
+  { id:"n0056", fr:"viande", jp:"肉", pos:"名詞（女）", ex_fr:"Je ne mange pas de viande.", ex_jp:"私は肉を食べません。", blank:"viande", masterOrder:56 },
+  { id:"n0057", fr:"personne", jp:"人", pos:"名詞（女）", ex_fr:"Il n'y a personne ici.", ex_jp:"ここには誰もいません。", blank:"personne", masterOrder:57 },
+  { id:"n0058", fr:"dame", jp:"婦人", pos:"名詞（女）", ex_fr:"Bonjour, madame.", ex_jp:"こんにちは、奥様。", blank:"dame", masterOrder:58 },
+  { id:"n0059", fr:"étude", jp:"勉強、研究", pos:"名詞（女）", ex_fr:"Il fait des études d'histoire.", ex_jp:"彼は歴史の研究（勉強）をしています。", blank:"étude", masterOrder:59 },
+  { id:"n0060", fr:"question", jp:"質問", pos:"名詞（女）", ex_fr:"J'ai une question à poser.", ex_jp:"尋ねたい質問があります。", blank:"question", masterOrder:60 },
+  { id:"n0061", fr:"idée", jp:"アイデア", pos:"名詞（女）", ex_fr:"C'est une bonne idée.", ex_jp:"それは良いアイデアですね。", blank:"idée", masterOrder:61 },
+  { id:"n0062", fr:"classe", jp:"クラス、授業", pos:"名詞（女）", ex_fr:"Le professeur est dans la classe.", ex_jp:"先生は教室にいます。", blank:"classe", masterOrder:62 },
+  { id:"n0063", fr:"leçon", jp:"課、レッスン", pos:"名詞（女）", ex_fr:"Nous commençons la première leçon.", ex_jp:"第1課を始めます。", blank:"leçon", masterOrder:63 },
+  { id:"n0064", fr:"fois", jp:"回、倍", pos:"名詞（女）", ex_fr:"Je l'ai lu trois fois.", ex_jp:"私はそれを3回読みました。", blank:"fois", masterOrder:64 },
+  { id:"n0065", fr:"suite", jp:"続き", pos:"名詞（女）", ex_fr:"Lisez la suite de l'article.", ex_jp:"記事の続きを読んでください。", blank:"suite", masterOrder:65 },
+  { id:"n0066", fr:"fin", jp:"終わり", pos:"名詞（女）", ex_fr:"C'est la fin du film.", ex_jp:"これが映画の終わりです。", blank:"fin", masterOrder:66 },
+  { id:"n0067", fr:"chambre", jp:"寝室、部屋", pos:"名詞（女）", ex_fr:"Je range my chambre.", ex_jp:"私は自分の部屋を片付けます。", blank:"chambre", masterOrder:67 },
+  { id:"n0068", fr:"douche", jp:"シャワー", pos:"名詞（女）", ex_fr:"Je prends une douche tous les matins.", ex_jp:"私は毎朝シャワーを浴びます。", blank:"douche", masterOrder:68 },
+  { id:"n0069", fr:"bicyclette", jp:"自転車", pos:"名詞（女）", ex_fr:"Il va au travail à bicyclette.", ex_jp:"彼は自転車で通勤します。", blank:"bicyclette", masterOrder:69 },
+  { id:"n0070", fr:"moto", jp:"オートバイ", pos:"名詞（女）", ex_fr:"Elle conduit une moto.", ex_jp:"彼女はオートバイを運転します。", blank:"moto", masterOrder:70 },
+  { id:"n0071", fr:"voiture", jp:"車", pos:"名詞（女）", ex_fr:"Ma voiture est en panne.", ex_jp:"私の車は故障しています。", blank:"voiture", masterOrder:71 },
+  { id:"n0072", fr:"nuit", jp:"夜", pos:"名詞（女）", ex_fr:"Bonne nuit !", ex_jp:"おやすみなさい！", blank:"nuit", masterOrder:72 },
+  { id:"n0073", fr:"lune", jp:"月", pos:"名詞（女）", ex_fr:"La lune est belle ce soir.", ex_jp:"今夜は月がきれいです。", blank:"lune", masterOrder:73 },
+  { id:"n0074", fr:"étoile", jp:"星", pos:"名詞（女）", ex_fr:"Regardez les étoiles.", ex_jp:"星を見てください。", blank:"étoile", masterOrder:74 },
+  { id:"n0075", fr:"matinée", jp:"朝（の間）", pos:"名詞（女）", ex_fr:"J'ai travaillé toute la matinée.", ex_jp:"午前中ずっと働きました。", blank:"matinée", masterOrder:75 },
+  { id:"n0076", fr:"journée", jp:"1日", pos:"名詞（女）", ex_fr:"Bonne journée !", ex_jp:"良い一日を！", blank:"journée", masterOrder:76 },
+  { id:"n0077", fr:"soirée", jp:"晩（の間）", pos:"名詞（女）", ex_fr:"Nous passons la soirée ensemble.", ex_jp:"私たちは晩を一緒に過ごします。", blank:"soirée", masterOrder:77 },
+  { id:"n0078", fr:"année", jp:"年", pos:"名詞（女）", ex_fr:"Bonne année !", ex_jp:"あけましておめでとうございます！", blank:"année", masterOrder:78 },
+  { id:"n0079", fr:"histoire", jp:"歴史、物語", pos:"名詞（女）", ex_fr:"Raconte-moi une histoire.", ex_jp:"物語を話して。", blank:"histoire", masterOrder:79 },
+  { id:"n0080", fr:"chanson", jp:"歌", pos:"名詞（女）", ex_fr:"C'est une chanson populaire.", ex_jp:"それは人気のある歌です。", blank:"chanson", masterOrder:80 },
+  { id:"n0081", fr:"guitare", jp:"ギター", pos:"名詞（女）", ex_fr:"Il joue de la guitare.", ex_jp:"彼はギターを弾きます。", blank:"guitare", masterOrder:81 },
+  { id:"n0082", fr:"chose", jp:"もの、こと", pos:"名詞（女）", ex_fr:"C'est la même chose.", ex_jp:"それは同じことです。", blank:"chose", masterOrder:82 },
+  { id:"n0083", fr:"poupée", jp:"人形", pos:"名詞（女）", ex_fr:"La petite fille joue avec sa poupée.", ex_jp:"小さな女の子が人形で遊んでいます。", blank:"poupée", masterOrder:83 },
+  { id:"n0084", fr:"balle", jp:"ボール", pos:"名詞（女）", ex_fr:"Lance la balle !", ex_jp:"ボールを投げて！", blank:"balle", masterOrder:84 },
+  { id:"n0085", fr:"rue", jp:"通り", pos:"名詞（女）", ex_fr:"Il traverse la rue.", ex_jp:"彼は通りを横切ります。", blank:"rue", masterOrder:85 },
+  { id:"n0086", fr:"avenue", jp:"大通り", pos:"名詞（女）", ex_fr:"L'hôtel se trouve sur cette avenue.", ex_jp:"ホテルはこの大通りにあります。", blank:"avenue", masterOrder:86 },
+  { id:"n0087", fr:"nature", jp:"自然", pos:"名詞（女）", ex_fr:"J'aime la nature.", ex_jp:"私は自然が好きです。", blank:"nature", masterOrder:87 },
+  { id:"n0088", fr:"forêt", jp:"森", pos:"名詞（女）", ex_fr:"Nous nous promenons dans la forêt.", ex_jp:"私たちは森の中を散歩します。", blank:"forêt", masterOrder:88 },
+  { id:"n0089", fr:"plante", jp:"植物", pos:"名詞（女）", ex_fr:"J'arrose les plantes.", ex_jp:"私は植物に水をやります。", blank:"plante", masterOrder:89 },
+  { id:"n0090", fr:"rivière", jp:"川", pos:"名詞（女）", ex_fr:"Ils nagent dans la rivière.", ex_jp:"彼らは川で泳いでいます。", blank:"rivière", masterOrder:90 },
+  { id:"n0091", fr:"pierre", jp:"石", pos:"名詞（女）", ex_fr:"Cette maison est en pierre.", ex_jp:"この家は石造りです。", blank:"pierre", masterOrder:91 },
+  { id:"n0092", fr:"rose", jp:"バラ", pos:"名詞（女）", ex_fr:"Il m'a offert des roses.", ex_jp:"彼は私にバラを贈ってくれました。", blank:"rose", masterOrder:92 },
+  { id:"n0093", fr:"île", jp:"島", pos:"名詞（女）", ex_fr:"Le Japon est un pays insulaire composé de plusieurs îles.", ex_jp:"日本は複数の島からなる島国です。", blank:"île", masterOrder:93 },
+  { id:"n0094", fr:"côte", jp:"海岸", pos:"名詞（女）", ex_fr:"Nous habitons sur la côte.", ex_jp:"私たちは海岸沿いに住んでいます。", blank:"côte", masterOrder:94 },
+  { id:"n0095", fr:"plage", jp:"砂浜", pos:"名詞（女）", ex_fr:"Les enfants jouent sur la plage.", ex_jp:"子供たちが砂浜で遊んでいます。", blank:"plage", masterOrder:95 },
+  { id:"n0096", fr:"promenade", jp:"散歩", pos:"名詞（女）", ex_fr:"Faisons une promenade.", ex_jp:"散歩しましょう。", blank:"promenade", masterOrder:96 },
+  { id:"n0097", fr:"tomate", jp:"トマト", pos:"名詞（女）", ex_fr:"Je prépare une salade de tomates.", ex_jp:"トマトサラダを作ります。", blank:"tomate", masterOrder:97 },
+  { id:"n0098", fr:"pomme de terre", jp:"じゃがいも", pos:"名詞（女）", ex_fr:"J'épluche les pommes de terre.", ex_jp:"じゃがいもの皮をむきます。", blank:"pomme de terre", masterOrder:98 },
+  { id:"n0099", fr:"orange", jp:"オレンジ", pos:"名詞（女）", ex_fr:"Je bois un jus d'orange.", ex_jp:"オレンジジュースを飲みます。", blank:"orange", masterOrder:99 },
+  { id:"n0100", fr:"fraise", jp:"いちご", pos:"名詞（女）", ex_fr:"Ces fraises sont sucrées.", ex_jp:"これらのいちごは甘いです。", blank:"fraise", masterOrder:100 },
+  { id:"n0101", fr:"confiture", jp:"ジャム", pos:"名詞（女）", ex_fr:"J'aime la confiture de fraises.", ex_jp:"私はイチゴジャムが好きです。", blank:"confiture", masterOrder:101 },
+  { id:"n0102", fr:"crème", jp:"クリーム", pos:"名詞（女）", ex_fr:"Un café avec de la crème, s'il vous plaît.", ex_jp:"クリーム入りのコーヒーをお願いします。", blank:"crème", masterOrder:102 },
+  { id:"n0103", fr:"baguette", jp:"バゲット", pos:"名詞（女）", ex_fr:"Je vais acheter une baguette.", ex_jp:"バゲットを買いに行きます。", blank:"baguette", masterOrder:103 },
+  { id:"n0104", fr:"boulangerie", jp:"パン屋", pos:"名詞（女）", ex_fr:"La boulangerie est ouverte.", ex_jp:"そのパン屋は開いています。", blank:"boulangerie", masterOrder:104 },
+  { id:"n0105", fr:"pâtisserie", jp:"菓子屋", pos:"名詞（女）", ex_fr:"Il a acheté un gâteau à la pâtisserie.", ex_jp:"彼はケーキ屋でケーキを買いました。", blank:"pâtisserie", masterOrder:105 },
+  { id:"n0106", fr:"boucherie", jp:"肉屋", pos:"名詞（女）", ex_fr:"Je prends de la viande à la boucherie.", ex_jp:"肉屋で肉を買います。", blank:"boucherie", masterOrder:106 },
+  { id:"n0107", fr:"aimer", jp:"好む、愛する", pos:"動詞", ex_fr:"J'aime lire des livres.", ex_jp:"私は本を読むのが好きです。", blank:"aimer", masterOrder:107 },
+  { id:"n0108", fr:"écrire", jp:"書く", pos:"動詞", ex_fr:"Elle écrit un courriel.", ex_jp:"彼女はメールを書いています。", blank:"écrire", masterOrder:108 },
+  { id:"n0109", fr:"lire", jp:"読む", pos:"動詞", ex_fr:"Je lis le journal tous les jours.", ex_jp:"私は毎日新聞を読みます。", blank:"lire", masterOrder:109 },
+  { id:"n0110", fr:"penser", jp:"考える", pos:"動詞", ex_fr:"Que pensez-vous de ce film ?", ex_jp:"この映画についてどう思いますか？", blank:"penser", masterOrder:110 },
+  { id:"n0111", fr:"habiter", jp:"住む", pos:"動詞", ex_fr:"J'habite au Japon.", ex_jp:"私は日本に住んでいます。", blank:"habiter", masterOrder:111 },
+  { id:"n0112", fr:"rester", jp:"留まる", pos:"動詞", ex_fr:"Je reste à la maison aujourd'hui.", ex_jp:"今日は家にいます。", blank:"rester", masterOrder:112 },
+  { id:"n0113", fr:"regarder", jp:"見る", pos:"動詞", ex_fr:"Il regarde la télévision.", ex_jp:"彼はテレビを見ています。", blank:"regarder", masterOrder:113 },
+  { id:"n0114", fr:"écouter", jp:"聴く", pos:"動詞", ex_fr:"Écoutez-moi bien.", ex_jp:"私の言うことをよく聞いてください。", blank:"écouter", masterOrder:114 },
+  { id:"n0115", fr:"répondre", jp:"答える", pos:"動詞", ex_fr:"Répondez à ma question.", ex_jp:"私の質問に答えてください。", blank:"répondre", masterOrder:115 },
+  { id:"n0116", fr:"marcher", jp:"歩く", pos:"動詞", ex_fr:"Nous marchons dans le parc.", ex_jp:"私たちは公園を歩きます。", blank:"marcher", masterOrder:116 },
+  { id:"n0117", fr:"courir", jp:"走る", pos:"動詞", ex_fr:"Il court vite.", ex_jp:"彼は走るのが速いです。", blank:"courir", masterOrder:117 },
+  { id:"n0118", fr:"savoir", jp:"知っている", pos:"動詞", ex_fr:"Je ne sais pas.", ex_jp:"私は知りません。", blank:"savoir", masterOrder:118 },
+  { id:"n0119", fr:"partir", jp:"出発する", pos:"動詞", ex_fr:"Le train part à 8 heures.", ex_jp:"電車は8時に出発します。", blank:"partir", masterOrder:119 },
+  { id:"n0120", fr:"revenir", jp:"戻る", pos:"動詞", ex_fr:"Je reviens tout de suite.", ex_jp:"すぐに戻ります。", blank:"revenir", masterOrder:120 },
+  { id:"n0121", fr:"préférer", jp:"～の方を好む", pos:"動詞", ex_fr:"Je préfère le thé au café.", ex_jp:"私はコーヒーよりお茶の方が好きです。", blank:"préférer", masterOrder:121 },
+  { id:"n0122", fr:"prendre", jp:"取る、乗る", pos:"動詞", ex_fr:"Je prends le bus.", ex_jp:"私はバスに乗ります。", blank:"prendre", masterOrder:122 },
+  { id:"n0123", fr:"porter", jp:"持つ、着る", pos:"動詞", ex_fr:"Elle porte une belle robe.", ex_jp:"彼女はきれいなドレスを着ています。", blank:"porter", masterOrder:123 },
+  { id:"n0124", fr:"pleuvoir", jp:"雨が降る", pos:"動詞", ex_fr:"Il pleut aujourd'hui.", ex_jp:"今日は雨が降っています。", blank:"pleuvoir", masterOrder:124 },
+  { id:"n0125", fr:"neiger", jp:"雪が降る", pos:"動詞", ex_fr:"Il neige en hiver.", ex_jp:"冬には雪が降ります。", blank:"neiger", masterOrder:125 },
+  { id:"n0126", fr:"pleurer", jp:"泣く", pos:"動詞", ex_fr:"Le bébé pleure.", ex_jp:"赤ちゃんが泣いています。", blank:"pleurer", masterOrder:126 },
+  { id:"n0127", fr:"rire", jp:"笑う", pos:"動詞", ex_fr:"Il rit beaucoup.", ex_jp:"彼はよく笑います。", blank:"rire", masterOrder:127 },
+  { id:"n0128", fr:"mettre", jp:"置く、身に着ける", pos:"動詞", ex_fr:"Mettez votre manteau.", ex_jp:"コートを着てください。", blank:"mettre", masterOrder:128 },
+  { id:"n0129", fr:"payer", jp:"支払う", pos:"動詞", ex_fr:"Je vais payer l'addition.", ex_jp:"私がお勘定を払います。", blank:"payer", masterOrder:129 },
+  { id:"n0130", fr:"dire", jp:"言う", pos:"動詞", ex_fr:"Qu'est-ce que vous dites ?", ex_jp:"何と言っているのですか？", blank:"dire", masterOrder:130 },
+  { id:"n0131", fr:"déjeuner", jp:"昼食をとる", pos:"動詞", ex_fr:"Nous déjeunons à midi.", ex_jp:"私たちは正午に昼食をとります。", blank:"déjeuner", masterOrder:131 },
+  { id:"n0132", fr:"parler", jp:"話す", pos:"動詞", ex_fr:"Je parle français et japonais.", ex_jp:"私はフランス語と日本語を話します。", blank:"parler", masterOrder:132 },
+  { id:"n0133", fr:"ouvrir", jp:"開ける", pos:"動詞", ex_fr:"Ouvrez la fenêtre.", ex_jp:"窓を開けてください。", blank:"ouvrir", masterOrder:133 },
+  { id:"n0134", fr:"fermer", jp:"閉める", pos:"動詞", ex_fr:"La porte est fermée.", ex_jp:"ドアは閉まっています。", blank:"fermer", masterOrder:134 },
+  { id:"n0135", fr:"offrir", jp:"贈る", pos:"動詞", ex_fr:"Il m'a offert un cadeau.", ex_jp:"彼は私にプレゼントを贈ってくれました。", blank:"offrir", masterOrder:135 },
+  { id:"n0136", fr:"entrer", jp:"入る", pos:"動詞", ex_fr:"Entrez, je vous en prie.", ex_jp:"どうぞ入ってください。", blank:"entrer", masterOrder:136 },
+  { id:"n0137", fr:"sortir", jp:"外出する", pos:"動詞", ex_fr:"Je sors ce soir.", ex_jp:"今夜外出します。", blank:"sortir", masterOrder:137 },
+  { id:"n0138", fr:"envoyer", jp:"送る", pos:"動詞", ex_fr:"J'envoie un message.", ex_jp:"メッセージを送ります。", blank:"envoyer", masterOrder:138 },
+  { id:"n0139", fr:"couper", jp:"切る", pos:"動詞", ex_fr:"Coupez le gâteau en deux.", ex_jp:"ケーキを半分に切ってください。", blank:"couper", masterOrder:139 },
+  { id:"n0140", fr:"recevoir", jp:"受け取る", pos:"動詞", ex_fr:"J'ai reçu une lettre.", ex_jp:"手紙を受け取りました。", blank:"recevoir", masterOrder:140 },
+  { id:"n0141", fr:"frapper", jp:"叩く", pos:"動詞", ex_fr:"Quelqu'un frappe à la porte.", ex_jp:"誰かがドアをノックしています。", blank:"frapper", masterOrder:141 },
+  { id:"n0142", fr:"voir", jp:"見える、会う", pos:"動詞", ex_fr:"Je vois un oiseau.", ex_jp:"鳥が見えます。", blank:"voir", masterOrder:142 },
+  { id:"n0143", fr:"entendre", jp:"聞こえる", pos:"動詞", ex_fr:"Je n'entends rien.", ex_jp:"何も聞こえません。", blank:"entendre", masterOrder:143 },
+  { id:"n0144", fr:"excuser", jp:"許す", pos:"動詞", ex_fr:"Excusez-moi.", ex_jp:"すみません。", blank:"excuser", masterOrder:144 },
+  { id:"n0145", fr:"commencer", jp:"始まる", pos:"動詞", ex_fr:"Le film commence à 20h.", ex_jp:"映画は20時に始まります。", blank:"commencer", masterOrder:145 },
+  { id:"n0146", fr:"chanter", jp:"歌う", pos:"動詞", ex_fr:"Elle chante très bien.", ex_jp:"彼女はとても上手に歌います。", blank:"chanter", masterOrder:146 },
+  { id:"n0147", fr:"manger", jp:"食べる", pos:"動詞", ex_fr:"Je mange une pomme.", ex_jp:"私はリンゴを食べます。", blank:"manger", masterOrder:147 },
+  { id:"n0148", fr:"boire", jp:"飲む", pos:"動詞", ex_fr:"Il boit de l'eau.", ex_jp:"彼は水を飲みます。", blank:"boire", masterOrder:148 },
+  { id:"n0149", fr:"sentir", jp:"感じる、匂う", pos:"動詞", ex_fr:"Je me sens bien aujourd'hui.", ex_jp:"今日は体調が良いです。", blank:"sentir", masterOrder:149 },
+  { id:"n0150", fr:"monter", jp:"登る", pos:"動詞", ex_fr:"Il monte les escaliers.", ex_jp:"彼は階段を登ります。", blank:"monter", masterOrder:150 },
+  { id:"n0151", fr:"descendre", jp:"降りる", pos:"動詞", ex_fr:"Je descends à la prochaine station.", ex_jp:"次の駅で降ります。", blank:"descendre", masterOrder:151 },
+  { id:"n0152", fr:"attendre", jp:"待つ", pos:"動詞", ex_fr:"J'attends le bus.", ex_jp:"バスを待っています。", blank:"attendre", masterOrder:152 },
+  { id:"n0153", fr:"arriver", jp:"到着する", pos:"動詞", ex_fr:"Il arrive demain.", ex_jp:"彼は明日到着します。", blank:"arriver", masterOrder:153 },
+  { id:"n0154", fr:"choisir", jp:"選ぶ", pos:"動詞", ex_fr:"Choisissez une carte.", ex_jp:"カードを1枚選んでください。", blank:"choisir", masterOrder:154 },
+  { id:"n0155", fr:"danser", jp:"踊る", pos:"動詞", ex_fr:"Voulez-vous danser avec moi ?", ex_jp:"私と一緒に踊りませんか？", blank:"danser", masterOrder:155 },
+  { id:"n0156", fr:"aller", jp:"行く", pos:"動詞", ex_fr:"Je vais à l'école.", ex_jp:"学校に行きます。", blank:"aller", masterOrder:156 },
+  { id:"n0157", fr:"venir", jp:"来る", pos:"動詞", ex_fr:"Venez ici.", ex_jp:"ここに来てください。", blank:"venir", masterOrder:157 },
+  { id:"n0158", fr:"donner", jp:"与える", pos:"動詞", ex_fr:"Donne-moi ça.", ex_jp:"それを私にちょうだい。", blank:"donner", masterOrder:158 },
+  { id:"n0159", fr:"voyager", jp:"旅行する", pos:"動詞", ex_fr:"J'aime voyager en train.", ex_jp:"私は電車で旅行するのが好きです。", blank:"voyager", masterOrder:159 },
+  { id:"n0160", fr:"conduire", jp:"運転する", pos:"動詞", ex_fr:"Elle conduit prudemment.", ex_jp:"彼女は慎重に運転します。", blank:"conduire", masterOrder:160 },
+  { id:"n0161", fr:"travailler", jp:"働く", pos:"動詞", ex_fr:"Je travaille de 9h à 17h.", ex_jp:"私は9時から17時まで働きます。", blank:"travailler", masterOrder:161 },
+  { id:"n0162", fr:"connaître", jp:"知っている", pos:"動詞", ex_fr:"Je connais ce restaurant.", ex_jp:"私はこのレストランを知っています。", blank:"connaître", masterOrder:162 },
+  { id:"n0163", fr:"préparer", jp:"準備する", pos:"動詞", ex_fr:"Je prépare le dîner.", ex_jp:"夕食を準備します。", blank:"préparer", masterOrder:163 },
+  { id:"n0164", fr:"visiter", jp:"訪問する", pos:"動詞", ex_fr:"Nous visitons le musée.", ex_jp:"私たちは美術館を訪れます。", blank:"visiter", masterOrder:164 },
+  { id:"n0165", fr:"tirer", jp:"引く", pos:"動詞", ex_fr:"Tirez la porte.", ex_jp:"ドアを引いてください。", blank:"tirer", masterOrder:165 },
+  { id:"n0166", fr:"appeler", jp:"呼ぶ", pos:"動詞", ex_fr:"Je vais appeler la police.", ex_jp:"警察を呼びます。", blank:"appeler", masterOrder:166 },
+  { id:"n0167", fr:"étudier", jp:"勉強する", pos:"動詞", ex_fr:"Il étudie le français.", ex_jp:"彼はフランス語を勉強しています。", blank:"étudier", masterOrder:167 },
+  { id:"n0168", fr:"tenir", jp:"保つ、持つ", pos:"動詞", ex_fr:"Tiens ça pour moi, s'il te plaît.", ex_jp:"これを私のために持っていて。", blank:"tenir", masterOrder:168 },
+  { id:"n0169", fr:"continuer", jp:"続ける", pos:"動詞", ex_fr:"Continuez tout droit.", ex_jp:"まっすぐ進んでください。", blank:"continuer", masterOrder:169 },
+  { id:"n0170", fr:"rentrer", jp:"帰宅する", pos:"動詞", ex_fr:"Je rentre chez moi.", ex_jp:"家に帰ります。", blank:"rentrer", masterOrder:170 },
+  { id:"n0171", fr:"passer", jp:"通る、過ごす", pos:"動詞", ex_fr:"Nous passons de bonnes vacances.", ex_jp:"私たちは良いバカンスを過ごしています。", blank:"passer", masterOrder:171 },
+  { id:"n0172", fr:"chercher", jp:"探す", pos:"動詞", ex_fr:"Je cherche mes lunettes.", ex_jp:"メガネを探しています。", blank:"chercher", masterOrder:172 },
+  { id:"n0173", fr:"trouver", jp:"見つける", pos:"動詞", ex_fr:"J'ai trouvé un travail.", ex_jp:"仕事を見つけました。", blank:"trouver", masterOrder:173 },
+  { id:"n0174", fr:"sembler", jp:"～のように見える", pos:"動詞", ex_fr:"Il semble fatigué.", ex_jp:"彼は疲れているように見えます。", blank:"sembler", masterOrder:174 },
+  { id:"n0175", fr:"comprendre", jp:"理解する", pos:"動詞", ex_fr:"Je ne comprends pas.", ex_jp:"わかりません。", blank:"comprendre", masterOrder:175 },
+  { id:"n0176", fr:"apprendre", jp:"学ぶ", pos:"動詞", ex_fr:"Elle apprend à nager.", ex_jp:"彼女は泳ぎを学んでいます。", blank:"apprendre", masterOrder:176 },
+  { id:"n0177", fr:"traverser", jp:"横切る", pos:"動詞", ex_fr:"Traversez la rue ici.", ex_jp:"ここで通りを横切ってください。", blank:"traverser", masterOrder:177 },
+  { id:"n0178", fr:"changer", jp:"変える", pos:"動詞", ex_fr:"Je dois changer de train.", ex_jp:"電車を乗り換えなければなりません。", blank:"changer", masterOrder:178 },
+  { id:"n0179", fr:"pousser", jp:"押す", pos:"動詞", ex_fr:"Poussez la porte.", ex_jp:"ドアを押してください。", blank:"pousser", masterOrder:179 },
+  { id:"n0180", fr:"se coucher", jp:"寝る", pos:"動詞", ex_fr:"Je me couche tard le samedi.", ex_jp:"私は土曜日は遅く寝ます。", blank:"se coucher", masterOrder:180 },
+  { id:"n0181", fr:"se lever", jp:"起きる", pos:"動詞", ex_fr:"Je me lève à 7 heures.", ex_jp:"私は7時に起きます。", blank:"se lever", masterOrder:181 },
+  { id:"n0182", fr:"vendre", jp:"売る", pos:"動詞", ex_fr:"Ils vendent leur maison.", ex_jp:"彼らは家を売ります。", blank:"vendre", masterOrder:182 },
+  { id:"n0183", fr:"acheter", jp:"買う", pos:"動詞", ex_fr:"J'achète du pain.", ex_jp:"パンを買います。", blank:"acheter", masterOrder:183 },
+  { id:"n0184", fr:"devenir", jp:"～になる", pos:"動詞", ex_fr:"Il veut devenir médecin.", ex_jp:"彼は医者になりたがっています。", blank:"devenir", masterOrder:184 },
+  { id:"n0185", fr:"utiliser", jp:"使う", pos:"動詞", ex_fr:"J'utilise mon ordinateur tous les jours.", ex_jp:"私は毎日パソコンを使います。", blank:"utiliser", masterOrder:185 },
+  { id:"n0186", fr:"tomber", jp:"落ちる", pos:"動詞", ex_fr:"Il est tombé par terre.", ex_jp:"彼は地面に転びました。", blank:"tomber", masterOrder:186 },
+  { id:"n0187", fr:"rendre", jp:"返す", pos:"動詞", ex_fr:"Tu dois rendre ce livre à la bibliothèque.", ex_jp:"この本を図書館に返さなければなりません。", blank:"rendre", masterOrder:187 },
+  { id:"n0188", fr:"tourner", jp:"曲がる", pos:"動詞", ex_fr:"Tournez à gauche au carrefour.", ex_jp:"交差点で左に曲がってください。", blank:"tourner", masterOrder:188 },
+  { id:"n0189", fr:"sonner", jp:"鳴る", pos:"動詞", ex_fr:"Le téléphone sonne.", ex_jp:"電話が鳴っています。", blank:"sonner", masterOrder:189 },
+  { id:"n0190", fr:"servir", jp:"仕える、役立つ", pos:"動詞", ex_fr:"À quoi ça sert ?", ex_jp:"それは何の役に立ちますか？", blank:"servir", masterOrder:190 },
+  { id:"n0191", fr:"se réveiller", jp:"目を覚ます", pos:"動詞", ex_fr:"Il se réveille tôt.", ex_jp:"彼は早く目を覚まします。", blank:"se réveiller", masterOrder:191 },
+  { id:"n0192", fr:"montrer", jp:"見せる", pos:"動詞", ex_fr:"Montrez-moi votre passeport.", ex_jp:"パスポートを見せてください。", blank:"montrer", masterOrder:192 },
+  { id:"n0193", fr:"répéter", jp:"繰り返す", pos:"動詞", ex_fr:"Pouvez-vous répéter, s'il vous plaît ?", ex_jp:"もう一度繰り返していただけますか？", blank:"répéter", masterOrder:193 },
+  { id:"n0194", fr:"rencontrer", jp:"出会う", pos:"動詞", ex_fr:"J'ai rencontré mon ami hier.", ex_jp:"昨日友人に会いました。", blank:"rencontrer", masterOrder:194 },
+  { id:"n0195", fr:"reconnaître", jp:"認める、再会する", pos:"動詞", ex_fr:"Je ne l'ai pas reconnu.", ex_jp:"私は彼だとわかりませんでした。", blank:"reconnaître", masterOrder:195 },
+  { id:"n0196", fr:"paraître", jp:"現れる", pos:"動詞", ex_fr:"Ce livre vient de paraître.", ex_jp:"この本は出版されたばかりです。", blank:"paraître", masterOrder:196 },
+  { id:"n0197", fr:"oublier", jp:"忘れる", pos:"動詞", ex_fr:"N'oubliez pas votre parapluie.", ex_jp:"傘を忘れないでください。", blank:"oublier", masterOrder:197 },
+  { id:"n0198", fr:"se rappeler", jp:"思い出す", pos:"動詞", ex_fr:"Je me rappelle son nom.", ex_jp:"彼の名前を思い出します。", blank:"se rappeler", masterOrder:198 },
+  { id:"n0199", fr:"croire", jp:"信じる", pos:"動詞", ex_fr:"Je crois que c'est vrai.", ex_jp:"それは本当だと信じています。", blank:"croire", masterOrder:199 },
+  { id:"n0200", fr:"livre", jp:"本", pos:"名詞（男）", ex_fr:"Ce livre est intéressant.", ex_jp:"この本は面白いです。", blank:"livre", masterOrder:200 },
+  { id:"n0201", fr:"stylo", jp:"ペン", pos:"名詞（男）", ex_fr:"Prête-moi un stylo.", ex_jp:"ペンを貸して。", blank:"stylo", masterOrder:201 },
+  { id:"n0202", fr:"argent", jp:"お金、銀", pos:"名詞（男）", ex_fr:"Je n'ai pas assez d'argent.", ex_jp:"お金が十分にありません。", blank:"argent", masterOrder:202 },
+  { id:"n0203", fr:"crayon", jp:"鉛筆", pos:"名詞（男）", ex_fr:"Écrivez au crayon.", ex_jp:"鉛筆で書いてください。", blank:"crayon", masterOrder:203 },
+  { id:"n0204", fr:"cahier", jp:"ノート", pos:"名詞（男）", ex_fr:"Prenez vos cahiers.", ex_jp:"ノートを取ってください。", blank:"cahier", masterOrder:204 },
+  { id:"n0205", fr:"mot", jp:"単語、言葉", pos:"名詞（男）", ex_fr:"Que signifie ce mot ?", ex_jp:"この単語はどういう意味ですか？", blank:"mot", masterOrder:205 },
+  { id:"n0206", fr:"dictionnaire", jp:"辞書", pos:"名詞（男）", ex_fr:"J'utilise un dictionnaire en ligne.", ex_jp:"私はオンライン辞書を使います。", blank:"dictionnaire", masterOrder:206 },
+  { id:"n0207", fr:"sac", jp:"鞄", pos:"名詞（男）", ex_fr:"Mon sac est lourd.", ex_jp:"私の鞄は重いです。", blank:"sac", masterOrder:207 },
+  { id:"n0208", fr:"lit", jp:"ベッド", pos:"名詞（男）", ex_fr:"Je vais au lit.", ex_jp:"ベッドに行きます（寝ます）。", blank:"lit", masterOrder:208 },
+  { id:"n0209", fr:"voyage", jp:"旅行", pos:"名詞（男）", ex_fr:"Bon voyage !", ex_jp:"良いご旅行を！", blank:"voyage", masterOrder:209 },
+  { id:"n0210", fr:"hôtel", jp:"ホテル", pos:"名詞（男）", ex_fr:"Cet hôtel est très cher.", ex_jp:"このホテルはとても高いです。", blank:"hôtel", masterOrder:210 },
+  { id:"n0211", fr:"prix", jp:"価格", pos:"名詞（男）", ex_fr:"Quel est le prix de cet article ?", ex_jp:"この商品の価格はいくらですか？", blank:"prix", masterOrder:211 },
+  { id:"n0212", fr:"homme", jp:"男", pos:"名詞（男）", ex_fr:"C'est un homme d'affaires.", ex_jp:"彼はビジネスマンです。", blank:"homme", masterOrder:212 },
+  { id:"n0213", fr:"arbre", jp:"木", pos:"名詞（男）", ex_fr:"Il y a un grand arbre dans le jardin.", ex_jp:"庭に大きな木があります。", blank:"arbre", masterOrder:213 },
+  { id:"n0214", fr:"jardin", jp:"庭", pos:"名詞（男）", ex_fr:"Les enfants jouent dans le jardin.", ex_jp:"子供たちが庭で遊んでいます。", blank:"jardin", masterOrder:214 },
+  { id:"n0215", fr:"vin", jp:"ワイン", pos:"名詞（男）", ex_fr:"Un verre de vin rouge, s'il vous plaît.", ex_jp:"赤ワインを1杯お願いします。", blank:"vin", masterOrder:215 },
+  { id:"n0216", fr:"riz", jp:"米", pos:"名詞（男）", ex_fr:"Je mange du riz tous les jours.", ex_jp:"毎日お米を食べます。", blank:"riz", masterOrder:216 },
+  { id:"n0217", fr:"garçon", jp:"男の子", pos:"名詞（男）", ex_fr:"Le petit garçon pleure.", ex_jp:"小さな男の子が泣いています。", blank:"garçon", masterOrder:217 },
+  { id:"n0218", fr:"frère", jp:"兄、弟", pos:"名詞（男）", ex_fr:"Mon frère habite à l'étranger.", ex_jp:"私の兄弟は海外に住んでいます。", blank:"frère", masterOrder:218 },
+  { id:"n0219", fr:"magasin", jp:"店", pos:"名詞（男）", ex_fr:"Ce magasin ouvre à 10 heures.", ex_jp:"この店は10時に開きます。", blank:"magasin", masterOrder:219 },
+  { id:"n0220", fr:"verre", jp:"コップ、ガラス", pos:"名詞（男）", ex_fr:"Un verre d'eau, s'il vous plaît.", ex_jp:"お水を一杯お願いします。", blank:"verre", masterOrder:220 },
+  { id:"n0221", fr:"petit déjeuner", jp:"朝食", pos:"名詞（男）", ex_fr:"Qu'est-ce que tu manges au petit déjeuner ?", ex_jp:"朝食に何を食べますか？", blank:"petit déjeuner", masterOrder:221 },
+  { id:"n0222", fr:"matin", jp:"朝", pos:"名詞（男）", ex_fr:"Je travaille ce matin.", ex_jp:"今朝は仕事です。", blank:"matin", masterOrder:222 },
+  { id:"n0223", fr:"journal", jp:"新聞、日記", pos:"名詞（男）", ex_fr:"Il lit le journal.", ex_jp:"彼は新聞を読みます。", blank:"journal", masterOrder:223 },
+  { id:"n0224", fr:"vélo", jp:"自転車", pos:"名詞（男）", ex_fr:"Je vais au supermarché à vélo.", ex_jp:"自転車でスーパーに行きます。", blank:"vélo", masterOrder:224 },
+  { id:"n0225", fr:"train", jp:"電車", pos:"名詞（男）", ex_fr:"Le train est en retard.", ex_jp:"電車は遅れています。", blank:"train", masterOrder:225 },
+  { id:"n0226", fr:"billet", jp:"切符、紙幣", pos:"名詞（男）", ex_fr:"Je voudrais un billet pour Paris.", ex_jp:"パリ行きの切符を1枚お願いします。", blank:"billet", masterOrder:226 },
+  { id:"n0227", fr:"bureau", jp:"事務室、机", pos:"名詞（男）", ex_fr:"Mon bureau est au premier étage.", ex_jp:"私のオフィスはフランスの1階にあります。", blank:"bureau", masterOrder:227 },
+  { id:"n0228", fr:"travail", jp:"仕事", pos:"名詞（男）", ex_fr:"J'ai beaucoup de travail aujourd'hui.", ex_jp:"今日は仕事がたくさんあります。", blank:"travail", masterOrder:228 },
+  { id:"n0229", fr:"pain", jp:"パン", pos:"名詞（男）", ex_fr:"J'achète du pain tous les matins.", ex_jp:"毎朝パンを買います。", blank:"pain", masterOrder:229 },
+  { id:"n0230", fr:"beurre", jp:"バター", pos:"名詞（男）", ex_fr:"Je mets du beurre sur ma tartine.", ex_jp:"パンにバターを塗ります。", blank:"beurre", masterOrder:230 },
+  { id:"n0231", fr:"légume", jp:"野菜", pos:"名詞（男）", ex_fr:"Il faut manger des légumes.", ex_jp:"野菜を食べなければなりません。", blank:"légume", masterOrder:231 },
+  { id:"n0232", fr:"fruit", jp:"果物", pos:"名詞（男）", ex_fr:"J'aime beaucoup les fruits frais.", ex_jp:"私は新鮮な果物が大好きです。", blank:"fruit", masterOrder:232 },
+  { id:"n0233", fr:"nom", jp:"名前、姓", pos:"名詞（男）", ex_fr:"Quel est votre nom de famille ?", ex_jp:"あなたの名字は何ですか？", blank:"nom", masterOrder:233 },
+  { id:"n0234", fr:"prénom", jp:"名(ファーストネーム)", pos:"名詞（男）", ex_fr:"Mon prénom est Paul.", ex_jp:"私の下の名前はポールです。", blank:"prénom", masterOrder:234 },
+  { id:"n0235", fr:"âge", jp:"年齢", pos:"名詞（男）", ex_fr:"Quel âge avez-vous ?", ex_jp:"何歳ですか？", blank:"âge", masterOrder:235 },
+  { id:"n0236", fr:"restaurant", jp:"レストラン", pos:"名詞（男）", ex_fr:"Ce restaurant est excellent.", ex_jp:"このレストランは素晴らしいです。", blank:"restaurant", masterOrder:236 },
+  { id:"n0237", fr:"menu", jp:"メニュー", pos:"名詞（男）", ex_fr:"Je voudrais le menu, s'il vous plaît.", ex_jp:"メニューをお願いします。", blank:"menu", masterOrder:237 },
+  { id:"n0238", fr:"repas", jp:"食事", pos:"名詞（男）", ex_fr:"Le repas est prêt.", ex_jp:"食事の用意ができました。", blank:"repas", masterOrder:238 },
+  { id:"n0239", fr:"poisson", jp:"魚", pos:"名詞（男）", ex_fr:"Je préfère le poisson à la viande.", ex_jp:"肉より魚が好きです。", blank:"poisson", masterOrder:239 },
+  { id:"n0240", fr:"dessert", jp:"デザート", pos:"名詞（男）", ex_fr:"Qu'est-ce que vous prenez en dessert ?", ex_jp:"デザートに何を召し上がりますか？", blank:"dessert", masterOrder:240 },
+  { id:"n0241", fr:"fromage", jp:"チーズ", pos:"名詞（男）", ex_fr:"La France est célèbre pour son fromage.", ex_jp:"フランスはチーズで有名です。", blank:"fromage", masterOrder:241 },
+  { id:"n0242", fr:"cadeau", jp:"プレゼント", pos:"名詞（男）", ex_fr:"C'est un cadeau d'anniversaire.", ex_jp:"これは誕生日プレゼントです。", blank:"cadeau", masterOrder:242 },
+  { id:"n0243", fr:"midi", jp:"正午", pos:"名詞（男）", ex_fr:"Il est midi.", ex_jp:"正午です。", blank:"midi", masterOrder:243 },
+  { id:"n0244", fr:"après-midi", jp:"午後", pos:"名詞（男）", ex_fr:"Que faites-vous cet après-midi ?", ex_jp:"今日の午後は何をしますか？", blank:"après-midi", masterOrder:244 },
+  { id:"n0245", fr:"déjeuner_n", jp:"昼食", pos:"名詞（男）", ex_fr:"Le déjeuner est à 13 heures.", ex_jp:"昼食は13時です。", blank:"déjeuner_n", masterOrder:245 },
+  { id:"n0246", fr:"soir", jp:"夜、晩", pos:"名詞（男）", ex_fr:"À ce soir !", ex_jp:"また今夜！", blank:"soir", masterOrder:246 },
+  { id:"n0247", fr:"dîner", jp:"夕食", pos:"名詞（男）", ex_fr:"Nous avons un dîner d'affaires.", ex_jp:"仕事の夕食会があります。", blank:"dîner", masterOrder:247 },
+  { id:"n0248", fr:"minuit", jp:"真夜中", pos:"名詞（男）", ex_fr:"Il est rentré à minuit.", ex_jp:"彼は真夜中に帰宅しました。", blank:"minuit", masterOrder:248 },
+  { id:"n0249", fr:"feu", jp:"火、信号", pos:"名詞（男）", ex_fr:"Tournez au feu rouge.", ex_jp:"赤信号で曲がってください。", blank:"feu", masterOrder:249 },
+  { id:"n0250", fr:"métro", jp:"地下鉄", pos:"名詞（男）", ex_fr:"Je prends le métro pour aller au travail.", ex_jp:"私は地下鉄に乗って仕事に行きます。", blank:"métro", masterOrder:250 },
+  { id:"n0251", fr:"bateau", jp:"船", pos:"名詞（男）", ex_fr:"Ils voyagent en bateau.", ex_jp:"彼らは船で旅行します。", blank:"bateau", masterOrder:251 },
+  { id:"n0252", fr:"jour", jp:"日", pos:"名詞（男）", ex_fr:"C'est un beau jour.", ex_jp:"美しい日ですね。", blank:"jour", masterOrder:252 },
+  { id:"n0253", fr:"mois", jp:"月（期間）", pos:"名詞（男）", ex_fr:"Je reste ici un mois.", ex_jp:"ここに1ヶ月滞在します。", blank:"mois", masterOrder:253 },
+  { id:"n0254", fr:"rendez-vous", jp:"待ち合わせ", pos:"名詞（男）", ex_fr:"J'ai un rendez-vous chez le médecin.", ex_jp:"医者の予約があります。", blank:"rendez-vous", masterOrder:254 },
+  { id:"n0255", fr:"père", jp:"父", pos:"名詞（男）", ex_fr:"Mon père est professeur.", ex_jp:"私の父は教師です。", blank:"père", masterOrder:255 },
+  { id:"n0256", fr:"fils", jp:"息子", pos:"名詞（男）", ex_fr:"Son fils est étudiant.", ex_jp:"彼の息子は学生です。", blank:"fils", masterOrder:256 },
+  { id:"n0257", fr:"mari", jp:"夫", pos:"名詞（男）", ex_fr:"Son mari travaille à la banque.", ex_jp:"彼女の夫は銀行で働いています。", blank:"mari", masterOrder:257 },
+  { id:"n0258", fr:"film", jp:"映画", pos:"名詞（男）", ex_fr:"C'est un bon film.", ex_jp:"それは良い映画です。", blank:"film", masterOrder:258 },
+  { id:"n0259", fr:"soleil", jp:"太陽", pos:"名詞（男）", ex_fr:"Le soleil brille aujourd'hui.", ex_jp:"今日は太陽が輝いています。", blank:"soleil", masterOrder:259 },
+  { id:"n0260", fr:"paquet", jp:"包み", pos:"名詞（男）", ex_fr:"J'ai reçu un paquet.", ex_jp:"小包を受け取りました。", blank:"paquet", masterOrder:260 },
+  { id:"n0261", fr:"timbre", jp:"切手", pos:"名詞（男）", ex_fr:"Il me faut un timbre pour cette lettre.", ex_jp:"この手紙には切手が必要です。", blank:"timbre", masterOrder:261 },
+  { id:"n0262", fr:"parfum", jp:"香水", pos:"名詞（男）", ex_fr:"J'aime ce parfum.", ex_jp:"この香水が好きです。", blank:"parfum", masterOrder:262 },
+  { id:"n0263", fr:"avion", jp:"飛行機", pos:"名詞（男）", ex_fr:"Nous allons en France en avion.", ex_jp:"私たちは飛行機でフランスに行きます。", blank:"avion", masterOrder:263 },
+  { id:"n0264", fr:"aéroport", jp:"空港", pos:"名詞（男）", ex_fr:"Comment aller à l'aéroport ?", ex_jp:"空港にはどうやって行けばいいですか？", blank:"aéroport", masterOrder:264 },
+  { id:"n0265", fr:"bagage", jp:"荷物", pos:"名詞（男）", ex_fr:"Où puis-je déposer mes bagages ?", ex_jp:"荷物はどこに預けられますか？", blank:"bagage", masterOrder:265 },
+  { id:"n0266", fr:"cinéma", jp:"映画館", pos:"名詞（男）", ex_fr:"Allons au cinéma ce soir.", ex_jp:"今夜映画館に行きましょう。", blank:"cinéma", masterOrder:266 },
+  { id:"n0267", fr:"musée", jp:"美術館、博物館", pos:"名詞（男）", ex_fr:"Le musée du Louvre est immense.", ex_jp:"ルーヴル美術館は広大です。", blank:"musée", masterOrder:267 },
+  { id:"n0268", fr:"sommeil", jp:"眠り", pos:"名詞（男）", ex_fr:"J'ai sommeil.", ex_jp:"私は眠いです。", blank:"sommeil", masterOrder:268 },
+  { id:"n0269", fr:"besoin", jp:"必要", pos:"名詞（男）", ex_fr:"J'ai besoin de ton aide.", ex_jp:"あなたの助けが必要です。", blank:"besoin", masterOrder:269 },
+  { id:"n0270", fr:"moment", jp:"瞬間", pos:"名詞（男）", ex_fr:"Attendez un moment, s'il vous plaît.", ex_jp:"少しお待ちください。", blank:"moment", masterOrder:270 },
+  { id:"n0271", fr:"passeport", jp:"パスポート", pos:"名詞（男）", ex_fr:"Montrez votre passeport.", ex_jp:"パスポートを見せてください。", blank:"passeport", masterOrder:271 },
+  { id:"n0272", fr:"monde", jp:"世界、人々", pos:"名詞（男）", ex_fr:"Il y a beaucoup de monde ici.", ex_jp:"ここにはたくさんの人がいます。", blank:"monde", masterOrder:272 },
+  { id:"n0273", fr:"sud", jp:"南", pos:"名詞（男）", ex_fr:"Ils habitent dans le sud de la France.", ex_jp:"彼らはフランスの南部に住んでいます。", blank:"sud", masterOrder:273 },
+  { id:"n0274", fr:"nord", jp:"北", pos:"名詞（男）", ex_fr:"Le vent du nord est froid.", ex_jp:"北風は冷たいです。", blank:"nord", masterOrder:274 },
+  { id:"n0275", fr:"devoir", jp:"宿題、義務", pos:"名詞（男）", ex_fr:"Fais tes devoirs.", ex_jp:"宿題をしなさい。", blank:"devoir", masterOrder:275 },
+  { id:"n0276", fr:"plaisir", jp:"喜び", pos:"名詞（男）", ex_fr:"C'est avec plaisir.", ex_jp:"喜んで。", blank:"plaisir", masterOrder:276 },
+  { id:"n0277", fr:"cheval", jp:"馬", pos:"名詞（男）", ex_fr:"Elle fait du cheval.", ex_jp:"彼女は乗馬をします。", blank:"cheval", masterOrder:277 },
+  { id:"n0278", fr:"oiseau", jp:"鳥", pos:"名詞（男）", ex_fr:"J'entends les oiseaux chanter.", ex_jp:"鳥が鳴くのが聞こえます。", blank:"oiseau", masterOrder:278 },
+  { id:"n0279", fr:"animal", jp:"動物", pos:"名詞（男）", ex_fr:"Quel est ton animal préféré ?", ex_jp:"あなたの好きな動物は何ですか？", blank:"animal", masterOrder:279 },
+  { id:"n0280", fr:"bruit", jp:"音、騒音", pos:"名詞（男）", ex_fr:"Ce bruit me dérange.", ex_jp:"この騒音は迷惑です。", blank:"bruit", masterOrder:280 },
+  { id:"n0281", fr:"silence", jp:"沈黙", pos:"名詞（男）", ex_fr:"Gardez le silence, s'il vous plaît.", ex_jp:"お静かに願います。", blank:"silence", masterOrder:281 },
+  { id:"n0282", fr:"côté", jp:"側", pos:"名詞（男）", ex_fr:"Asseyez-vous à côté de moi.", ex_jp:"私の隣に座ってください。", blank:"côté", masterOrder:282 },
+  { id:"n0283", fr:"sport", jp:"スポーツ", pos:"名詞（男）", ex_fr:"Tu fais du sport ?", ex_jp:"あなたはスポーツをしますか？", blank:"sport", masterOrder:283 },
+  { id:"n0284", fr:"match", jp:"試合", pos:"名詞（男）", ex_fr:"Le match de football commence.", ex_jp:"サッカーの試合が始まります。", blank:"match", masterOrder:284 },
+  { id:"n0285", fr:"sucre", jp:"砂糖", pos:"名詞（男）", ex_fr:"Je prends mon café sans sucre.", ex_jp:"私はコーヒーを砂糖なしで飲みます。", blank:"sucre", masterOrder:285 },
+  { id:"n0286", fr:"gâteau", jp:"菓子", pos:"名詞（男）", ex_fr:"C'est un gâteau au chocolat.", ex_jp:"これはチョコレートケーキです。", blank:"gâteau", masterOrder:286 },
+  { id:"n0287", fr:"sel", jp:"塩", pos:"名詞（男）", ex_fr:"Passe-moi le sel, s'il te plaît.", ex_jp:"塩を取って。", blank:"sel", masterOrder:287 },
+  { id:"n0288", fr:"poivre", jp:"胡椒", pos:"名詞（男）", ex_fr:"Il y a trop de poivre dans ce plat.", ex_jp:"この料理には胡椒が入りすぎています。", blank:"poivre", masterOrder:288 },
+  { id:"n0289", fr:"chocolat", jp:"チョコレート", pos:"名詞（男）", ex_fr:"J'adore le chocolat.", ex_jp:"私はチョコレートが大好きです。", blank:"chocolat", masterOrder:289 },
+  { id:"n0290", fr:"doigt", jp:"指", pos:"名詞（男）", ex_fr:"Je me suis coupé le doigt.", ex_jp:"指を切ってしまいました。", blank:"doigt", masterOrder:290 },
+  { id:"n0291", fr:"cheveu", jp:"髪", pos:"名詞（男）", ex_fr:"Elle a les cheveux longs.", ex_jp:"彼女は髪が長いです。", blank:"cheveu", masterOrder:291 },
+  { id:"n0292", fr:"ventre", jp:"お腹", pos:"名詞（男）", ex_fr:"J'ai mal au ventre.", ex_jp:"お腹が痛いです。", blank:"ventre", masterOrder:292 },
+  { id:"n0293", fr:"dos", jp:"背中", pos:"名詞（男）", ex_fr:"J'ai mal au dos.", ex_jp:"背中が痛いです。", blank:"dos", masterOrder:293 },
+  { id:"n0294", fr:"pied", jp:"足（足首以下）", pos:"名詞（男）", ex_fr:"Je vais au travail à pied.", ex_jp:"徒歩で仕事に行きます。", blank:"pied", masterOrder:294 },
+  { id:"n0295", fr:"parc", jp:"公園", pos:"名詞（男）", ex_fr:"Nous nous promenons dans le parc.", ex_jp:"私たちは公園を散歩します。", blank:"parc", masterOrder:295 },
+  { id:"n0296", fr:"banc", jp:"ベンチ", pos:"名詞（男）", ex_fr:"Asseyons-nous sur ce banc.", ex_jp:"このベンチに座りましょう。", blank:"banc", masterOrder:296 },
+  { id:"n0297", fr:"chemin", jp:"道", pos:"名詞（男）", ex_fr:"Je suis en chemin.", ex_jp:"今向かっています。", blank:"chemin", masterOrder:297 },
+  { id:"n0298", fr:"arrêt", jp:"停留所", pos:"名詞（男）", ex_fr:"Où est l'arrêt de bus ?", ex_jp:"バス停はどこですか？", blank:"arrêt", masterOrder:298 },
+  { id:"n0299", fr:"quartier", jp:"地区、界隈", pos:"名詞（男）", ex_fr:"J'habite dans un quartier calme.", ex_jp:"静かな地区に住んでいます。", blank:"quartier", masterOrder:299 },
+  { id:"n0300", fr:"centre", jp:"中心", pos:"名詞（男）", ex_fr:"L'hôtel est au centre-ville.", ex_jp:"ホテルは市の中心部にあります。", blank:"centre", masterOrder:300 },
+  { id:"n0301", fr:"boulevard", jp:"大通り", pos:"名詞（男）", ex_fr:"Nous marchons sur le boulevard.", ex_jp:"私たちは大通りを歩いています。", blank:"boulevard", masterOrder:301 },
+  { id:"n0302", fr:"studio", jp:"ワンルーム", pos:"名詞（男）", ex_fr:"Il loue un petit studio.", ex_jp:"彼は小さなワンルームを借りています。", blank:"studio", masterOrder:302 },
+  { id:"n0303", fr:"étage", jp:"階", pos:"名詞（男）", ex_fr:"Mon appartement est au 3ème étage.", ex_jp:"私のアパートはフランスの3階です。", blank:"étage", masterOrder:303 },
+  { id:"n0304", fr:"toit", jp:"屋根", pos:"名詞（男）", ex_fr:"Il y a un oiseau sur le toit.", ex_jp:"屋根の上に鳥がいます。", blank:"toit", masterOrder:304 },
+  { id:"n0305", fr:"chauffage", jp:"暖房", pos:"名詞（男）", ex_fr:"Le chauffage ne marche pas.", ex_jp:"暖房が機能していません。", blank:"chauffage", masterOrder:305 },
+  { id:"n0306", fr:"bain", jp:"風呂", pos:"名詞（男）", ex_fr:"Je prends un bain chaud.", ex_jp:"温かいお風呂に入ります。", blank:"bain", masterOrder:306 },
+  { id:"n0307", fr:"ménage", jp:"家事", pos:"名詞（男）", ex_fr:"Je fais le ménage le dimanche.", ex_jp:"日曜日に家事をします。", blank:"ménage", masterOrder:307 },
+  { id:"n0308", fr:"escalier", jp:"階段", pos:"名詞（男）", ex_fr:"Prenez l'escalier à droite.", ex_jp:"右の階段をご利用ください。", blank:"escalier", masterOrder:308 },
+  { id:"n0309", fr:"ascenseur", jp:"エレベーター", pos:"名詞（男）", ex_fr:"L'ascenseur est en panne.", ex_jp:"エレベーターは故障中です。", blank:"ascenseur", masterOrder:309 },
+  { id:"n0310", fr:"couloir", jp:"廊下", pos:"名詞（男）", ex_fr:"La chambre est au bout du couloir.", ex_jp:"部屋は廊下の突き当たりです。", blank:"couloir", masterOrder:310 },
+  { id:"n0311", fr:"anniversaire", jp:"誕生日", pos:"名詞（男）", ex_fr:"Joyeux anniversaire !", ex_jp:"お誕生日おめでとう！", blank:"anniversaire", masterOrder:311 },
+  { id:"n0312", fr:"weekend", jp:"週末", pos:"名詞（男）", ex_fr:"Bon weekend !", ex_jp:"良い週末を！", blank:"weekend", masterOrder:312 },
+  { id:"n0313", fr:"est", jp:"東", pos:"名詞（男）", ex_fr:"Le Japon est en Asie de l'Est.", ex_jp:"日本は東アジアにあります。", blank:"est", masterOrder:313 },
+  { id:"n0314", fr:"ouest", jp:"西", pos:"名詞（男）", ex_fr:"Le soleil se couche à l'ouest.", ex_jp:"太陽は西に沈みます。", blank:"ouest", masterOrder:314 },
+  { id:"n0315", fr:"pantalon", jp:"ズボン", pos:"名詞（男）", ex_fr:"J'ai acheté un pantalon noir.", ex_jp:"黒いズボンを買いました。", blank:"pantalon", masterOrder:315 },
+  { id:"n0316", fr:"heureux / heureuse", jp:"幸せな", pos:"形容詞", ex_fr:"Je suis très heureux de vous voir.", ex_jp:"お会いできてとても嬉しいです。", blank:"heureux / heureuse", masterOrder:316 },
+  { id:"n0317", fr:"malheureux / malheureuse", jp:"不幸な", pos:"形容詞", ex_fr:"Il a l'air malheureux.", ex_jp:"彼は不幸そうです。", blank:"malheureux / malheureuse", masterOrder:317 },
+  { id:"n0318", fr:"libre", jp:"自由な、暇な", pos:"形容詞", ex_fr:"Êtes-vous libre demain ?", ex_jp:"明日はお暇ですか？", blank:"libre", masterOrder:318 },
+  { id:"n0319", fr:"rouge", jp:"赤い", pos:"形容詞", ex_fr:"J'aime cette robe rouge.", ex_jp:"私はこの赤いドレスが好きです。", blank:"rouge", masterOrder:319 },
+  { id:"n0320", fr:"malade", jp:"病気の", pos:"形容詞", ex_fr:"Je suis malade.", ex_jp:"私は病気です。", blank:"malade", masterOrder:320 },
+  { id:"n0321", fr:"enchanté(e)", jp:"はじめまして", pos:"形容詞", ex_fr:"Enchanté de faire votre connaissance.", ex_jp:"お会いできて光栄です。", blank:"enchanté(e)", masterOrder:321 },
+  { id:"n0322", fr:"grand(e)", jp:"大きい、背が高い", pos:"形容詞", ex_fr:"Il est très grand.", ex_jp:"彼はとても背が高いです。", blank:"grand(e)", masterOrder:322 },
+  { id:"n0323", fr:"petit(e)", jp:"小さい、背が低い", pos:"形容詞", ex_fr:"C'est une petite ville.", ex_jp:"これは小さな町です。", blank:"petit(e)", masterOrder:323 },
+  { id:"n0324", fr:"noir(e)", jp:"黒い", pos:"形容詞", ex_fr:"Elle a un chat noir.", ex_jp:"彼女は黒い猫を飼っています。", blank:"noir(e)", masterOrder:324 },
+  { id:"n0325", fr:"long / longue", jp:"長い", pos:"形容詞", ex_fr:"C'est une longue histoire.", ex_jp:"それは長い話です。", blank:"long / longue", masterOrder:325 },
+  { id:"n0326", fr:"court(e)", jp:"短い", pos:"形容詞", ex_fr:"La réunion a été très courte.", ex_jp:"会議はとても短かったです。", blank:"court(e)", masterOrder:326 },
+  { id:"n0327", fr:"triste", jp:"悲しい", pos:"形容詞", ex_fr:"Pourquoi es-tu triste ?", ex_jp:"なぜ悲しんでいるの？", blank:"triste", masterOrder:327 },
+  { id:"n0328", fr:"vieux / vieille", jp:"古い、年老いた", pos:"形容詞", ex_fr:"C'est un vieil ami.", ex_jp:"彼は古い友人です。", blank:"vieux / vieille", masterOrder:328 },
+  { id:"n0329", fr:"fermé(e)", jp:"閉まっている", pos:"形容詞", ex_fr:"Le magasin est fermé le dimanche.", ex_jp:"日曜日は店が閉まっています。", blank:"fermé(e)", masterOrder:329 },
+  { id:"n0330", fr:"ouvert(e)", jp:"開いている", pos:"形容詞", ex_fr:"La fenêtre est ouverte.", ex_jp:"窓が開いています。", blank:"ouvert(e)", masterOrder:330 },
+  { id:"n0331", fr:"français(e)", jp:"フランスの", pos:"形容詞", ex_fr:"Il apprend la langue française.", ex_jp:"彼はフランス語を学んでいます。", blank:"français(e)", masterOrder:331 },
+  { id:"n0332", fr:"droit(e)", jp:"右の、まっすぐな", pos:"形容詞", ex_fr:"Ma main droite me fait mal.", ex_jp:"右手が痛いです。", blank:"droit(e)", masterOrder:332 },
+  { id:"n0333", fr:"gauche_adj", jp:"左の", pos:"形容詞", ex_fr:"Il est gaucher, il utilise sa main gauche.", ex_jp:"彼は左利きで、左手を使います。", blank:"gauche_adj", masterOrder:333 },
+  { id:"n0334", fr:"léger / légère", jp:"軽い", pos:"形容詞", ex_fr:"Cette valise est très légère.", ex_jp:"このスーツケースはとても軽いです。", blank:"léger / légère", masterOrder:334 },
+  { id:"n0335", fr:"lourd(e)", jp:"重い", pos:"形容詞", ex_fr:"Ce sac est trop lourd.", ex_jp:"この鞄は重すぎます。", blank:"lourd(e)", masterOrder:335 },
+  { id:"n0336", fr:"vrai(e)", jp:"本当の", pos:"形容詞", ex_fr:"C'est une histoire vraie.", ex_jp:"これは実話です。", blank:"vrai(e)", masterOrder:336 },
+  { id:"n0337", fr:"faux / fausse", jp:"嘘の、間違った", pos:"形容詞", ex_fr:"Ce numéro est faux.", ex_jp:"この番号は間違っています。", blank:"faux / fausse", masterOrder:337 },
+  { id:"n0338", fr:"possible", jp:"可能な", pos:"形容詞", ex_fr:"C'est possible.", ex_jp:"それは可能です。", blank:"possible", masterOrder:338 },
+  { id:"n0339", fr:"impossible", jp:"不可能な", pos:"形容詞", ex_fr:"C'est impossible.", ex_jp:"それは不可能です。", blank:"impossible", masterOrder:339 },
+  { id:"n0340", fr:"jeune", jp:"若い", pos:"形容詞", ex_fr:"Il est encore très jeune.", ex_jp:"彼はまだとても若いです。", blank:"jeune", masterOrder:340 },
+  { id:"n0341", fr:"riche", jp:"豊かな、金持ちの", pos:"形容詞", ex_fr:"Ce pays est riche en ressources.", ex_jp:"この国は資源が豊かです。", blank:"riche", masterOrder:341 },
+  { id:"n0342", fr:"pauvre", jp:"貧しい", pos:"形容詞", ex_fr:"C'est un homme pauvre.", ex_jp:"彼は貧しい男性です。", blank:"pauvre", masterOrder:342 },
+  { id:"n0343", fr:"fatigué(e)", jp:"疲れた", pos:"形容詞", ex_fr:"Je suis très fatigué aujourd'hui.", ex_jp:"今日はとても疲れています。", blank:"fatigué(e)", masterOrder:343 },
+  { id:"n0344", fr:"intéressant(e)", jp:"面白い", pos:"形容詞", ex_fr:"Ce livre est intéressant.", ex_jp:"この本は面白いです。", blank:"intéressant(e)", masterOrder:344 },
+  { id:"n0345", fr:"joli(e)", jp:"きれいな、可愛い", pos:"形容詞", ex_fr:"Elle porte une jolie robe.", ex_jp:"彼女はきれいなワンピースを着ています。", blank:"joli(e)", masterOrder:345 },
+  { id:"n0346", fr:"gros / grosse", jp:"太った、太い", pos:"形容詞", ex_fr:"C'est un gros chien.", ex_jp:"それは太った犬です。", blank:"gros / grosse", masterOrder:346 },
+  { id:"n0347", fr:"demi(e)", jp:"半分の", pos:"形容詞", ex_fr:"Je voudrais une demi-baguette.", ex_jp:"バゲットを半分お願いします。", blank:"demi(e)", masterOrder:347 },
+  { id:"n0348", fr:"sûr(e)", jp:"確信して、安全な", pos:"形容詞", ex_fr:"Êtes-vous sûr ?", ex_jp:"確信していますか？", blank:"sûr(e)", masterOrder:348 },
+  { id:"n0349", fr:"quel / quelle", jp:"どんな、どの", pos:"形容詞（疑問）", ex_fr:"Quel temps fait-il ?", ex_jp:"どんな天気ですか？", blank:"quel / quelle", masterOrder:349 },
+  { id:"n0350", fr:"vert(e)", jp:"緑の", pos:"形容詞", ex_fr:"J'aime le thé vert.", ex_jp:"私は緑茶が好きです。", blank:"vert(e)", masterOrder:350 },
+  { id:"n0351", fr:"étranger / étrangère", jp:"外国の", pos:"形容詞", ex_fr:"J'aime étudier les langues étrangères.", ex_jp:"私は外国語を勉強するのが好きです。", blank:"étranger / étrangère", masterOrder:351 },
+  { id:"n0352", fr:"gentil / gentille", jp:"親切な", pos:"形容詞", ex_fr:"Vous êtes très gentil.", ex_jp:"あなたはとても親切ですね。", blank:"gentil / gentille", masterOrder:352 },
+  { id:"n0353", fr:"timide", jp:"内気な", pos:"形容詞", ex_fr:"Il est un peu timide.", ex_jp:"彼は少し内気です。", blank:"timide", masterOrder:353 },
+  { id:"n0354", fr:"facile", jp:"簡単な", pos:"形容詞", ex_fr:"C'est une question facile.", ex_jp:"それは簡単な質問です。", blank:"facile", masterOrder:354 },
+  { id:"n0355", fr:"difficile", jp:"難しい", pos:"形容詞", ex_fr:"Cet exercice est difficile.", ex_jp:"この練習問題は難しいです。", blank:"difficile", masterOrder:355 },
+  { id:"n0356", fr:"tout / toute", jp:"全ての", pos:"形容詞", ex_fr:"Je travaille tous les jours.", ex_jp:"私は毎日働きます。", blank:"tout / toute", masterOrder:356 },
+  { id:"n0357", fr:"chinois(e)", jp:"中国の", pos:"形容詞", ex_fr:"J'aime la cuisine chinoise.", ex_jp:"私は中国料理が好きです。", blank:"chinois(e)", masterOrder:357 },
+  { id:"n0358", fr:"ancien(ne)", jp:"古い、元～", pos:"形容詞", ex_fr:"C'est mon ancien professeur.", ex_jp:"彼は私の昔の先生です。", blank:"ancien(ne)", masterOrder:358 },
+  { id:"n0359", fr:"nouveau / nouvelle", jp:"新しい", pos:"形容詞", ex_fr:"J'ai acheté une nouvelle voiture.", ex_jp:"新しい車を買いました。", blank:"nouveau / nouvelle", masterOrder:359 },
+  { id:"n0360", fr:"blanc / blanche", jp:"白い", pos:"形容詞", ex_fr:"Elle porte une chemise blanche.", ex_jp:"彼女は白いシャツを着ています。", blank:"blanc / blanche", masterOrder:360 },
+  { id:"n0361", fr:"classique", jp:"古典的な", pos:"形容詞", ex_fr:"J'aime la musique classique.", ex_jp:"私はクラシック音楽が好きです。", blank:"classique", masterOrder:361 },
+  { id:"n0362", fr:"connu(e)", jp:"知られた", pos:"形容詞", ex_fr:"C'est un acteur très connu.", ex_jp:"彼はとてもよく知られた俳優です。", blank:"connu(e)", masterOrder:362 },
+  { id:"n0363", fr:"prochain(e)", jp:"次の", pos:"形容詞", ex_fr:"À la semaine prochaine !", ex_jp:"また来週！", blank:"prochain(e)", masterOrder:363 },
+  { id:"n0364", fr:"premier / première", jp:"最初の", pos:"形容詞", ex_fr:"C'est ma première fois en France.", ex_jp:"フランスは今回が初めてです。", blank:"premier / première", masterOrder:364 },
+  { id:"n0365", fr:"dernier / dernière", jp:"最後の", pos:"形容詞", ex_fr:"C'est le dernier train.", ex_jp:"これが最終電車です。", blank:"dernier / dernière", masterOrder:365 },
+  { id:"n0366", fr:"cher / chère", jp:"高価な、親愛なる", pos:"形容詞", ex_fr:"Cet ordinateur est trop cher.", ex_jp:"このパソコンは高すぎます。", blank:"cher / chère", masterOrder:366 },
+  { id:"n0367", fr:"sympathique", jp:"感じの良い", pos:"形容詞", ex_fr:"Mon voisin est très sympathique.", ex_jp:"私の隣人はとても感じが良いです。", blank:"sympathique", masterOrder:367 },
+  { id:"n0368", fr:"confortable", jp:"快適な", pos:"形容詞", ex_fr:"Ce lit est très confortable.", ex_jp:"このベッドはとても快適です。", blank:"confortable", masterOrder:368 },
+  { id:"n0369", fr:"italien(ne)", jp:"イタリアの", pos:"形容詞", ex_fr:"Nous allons dans un restaurant italien.", ex_jp:"私たちはイタリアンレストランに行きます。", blank:"italien(ne)", masterOrder:369 },
+  { id:"n0370", fr:"bleu(e)", jp:"青い", pos:"形容詞", ex_fr:"Le ciel est bleu aujourd'hui.", ex_jp:"今日は空が青いです。", blank:"bleu(e)", masterOrder:370 },
+  { id:"n0371", fr:"mignon / mignonne", jp:"可愛い", pos:"形容詞", ex_fr:"Ton chat est très mignon.", ex_jp:"あなたの猫はとても可愛いです。", blank:"mignon / mignonne", masterOrder:371 },
+  { id:"n0372", fr:"froid(e)", jp:"寒い、冷たい", pos:"形容詞", ex_fr:"Il fait froid aujourd'hui.", ex_jp:"今日は寒いです。", blank:"froid(e)", masterOrder:372 },
+  { id:"n0373", fr:"chaud(e)", jp:"暑い、熱い", pos:"形容詞", ex_fr:"Il fait très chaud en été.", ex_jp:"夏はとても暑いです。", blank:"chaud(e)", masterOrder:373 },
+  { id:"n0374", fr:"beau / belle", jp:"美しい", pos:"形容詞", ex_fr:"Il fait beau aujourd'hui.", ex_jp:"今日は天気が良いです。", blank:"beau / belle", masterOrder:374 },
+  { id:"n0375", fr:"rare", jp:"珍しい", pos:"形容詞", ex_fr:"C'est un oiseau très rare.", ex_jp:"それはとても珍しい鳥です。", blank:"rare", masterOrder:375 },
+  { id:"n0376", fr:"frais / fraîche", jp:"涼しい、新鮮な", pos:"形容詞", ex_fr:"L'air est frais ce matin.", ex_jp:"今朝は空気が涼しいです。", blank:"frais / fraîche", masterOrder:376 },
+  { id:"n0377", fr:"parfait(e)", jp:"完璧な", pos:"形容詞", ex_fr:"Ton français est parfait.", ex_jp:"あなたのフランス語は完璧です。", blank:"parfait(e)", masterOrder:377 },
+  { id:"n0378", fr:"quotidien(ne)", jp:"日常の", pos:"形容詞", ex_fr:"C'est mon travail quotidien.", ex_jp:"これが私の日常の仕事です。", blank:"quotidien(ne)", masterOrder:378 },
+  { id:"n0379", fr:"mensuel(le)", jp:"月刊の", pos:"形容詞", ex_fr:"Je lis un magazine mensuel.", ex_jp:"私は月刊誌を読みます。", blank:"mensuel(le)", masterOrder:379 },
+  { id:"n0380", fr:"grave", jp:"重大な", pos:"形容詞", ex_fr:"Ce n'est pas grave.", ex_jp:"たいしたことではありません。", blank:"grave", masterOrder:380 },
+  { id:"n0381", fr:"bon / bonne", jp:"良い、美味しい", pos:"形容詞", ex_fr:"Ce gâteau est très bon.", ex_jp:"このケーキはとても美味しいです。", blank:"bon / bonne", masterOrder:381 },
+  { id:"n0382", fr:"meilleur(e)", jp:"より良い", pos:"形容詞", ex_fr:"C'est la meilleure solution.", ex_jp:"それが最良の解決策です。", blank:"meilleur(e)", masterOrder:382 },
+  { id:"n0383", fr:"bizarre", jp:"奇妙な", pos:"形容詞", ex_fr:"C'est une histoire bizarre.", ex_jp:"それは奇妙な話です。", blank:"bizarre", masterOrder:383 },
+  { id:"n0384", fr:"content(e)", jp:"満足した", pos:"形容詞", ex_fr:"Je suis très content de mon achat.", ex_jp:"買ったものにとても満足しています。", blank:"content(e)", masterOrder:384 },
+  { id:"n0385", fr:"fort(e)", jp:"強い", pos:"形容詞", ex_fr:"Le vent est très fort aujourd'hui.", ex_jp:"今日は風がとても強いです。", blank:"fort(e)", masterOrder:385 },
+  { id:"n0386", fr:"faible", jp:"弱い", pos:"形容詞", ex_fr:"La lumière est faible ici.", ex_jp:"ここの光は弱いです。", blank:"faible", masterOrder:386 },
+  { id:"n0387", fr:"bref / brève", jp:"短い、簡潔な", pos:"形容詞", ex_fr:"Soyez bref, s'il vous plaît.", ex_jp:"簡潔にお願いします。", blank:"bref / brève", masterOrder:387 },
+  { id:"n0388", fr:"entendu", jp:"了解した", pos:"間投詞/形容詞", ex_fr:"Entendu, je le ferai.", ex_jp:"了解しました、それをやります。", blank:"entendu", masterOrder:388 },
+  { id:"n0389", fr:"formidable", jp:"すばらしい", pos:"形容詞", ex_fr:"C'est une idée formidable !", ex_jp:"すばらしいアイデアですね！", blank:"formidable", masterOrder:389 },
+  { id:"n0390", fr:"égal(e)", jp:"等しい", pos:"形容詞", ex_fr:"Tous les hommes sont égaux en droits.", ex_jp:"すべての人間は権利において等しいです。", blank:"égal(e)", masterOrder:390 },
+  { id:"n0391", fr:"rond(e)", jp:"丸い", pos:"形容詞", ex_fr:"La table est ronde.", ex_jp:"テーブルは丸いです。", blank:"rond(e)", masterOrder:391 },
+  { id:"n0392", fr:"sage", jp:"賢い、おとなしい", pos:"形容詞", ex_fr:"Soyez sage !", ex_jp:"おとなしくしていなさい！", blank:"sage", masterOrder:392 },
+  { id:"n0393", fr:"marié(e)", jp:"結婚している", pos:"形容詞", ex_fr:"Je suis marié et j'ai deux enfants.", ex_jp:"私は結婚していて、子供が2人います。", blank:"marié(e)", masterOrder:393 },
+  { id:"n0394", fr:"désolé(e)", jp:"申し訳ない", pos:"形容詞", ex_fr:"Je suis désolé d'être en retard.", ex_jp:"遅れて申し訳ありません。", blank:"désolé(e)", masterOrder:394 },
+  { id:"n0395", fr:"pratique", jp:"実用的な", pos:"形容詞", ex_fr:"Ce dictionnaire est très pratique.", ex_jp:"この辞書はとても実用的です。", blank:"pratique", masterOrder:395 },
+  { id:"n0396", fr:"moderne", jp:"現代的な", pos:"形容詞", ex_fr:"J'aime l'art moderne.", ex_jp:"私は現代美術が好きです。", blank:"moderne", masterOrder:396 },
+  { id:"n0397", fr:"seul(e)", jp:"一人の", pos:"形容詞", ex_fr:"Je voyage seul.", ex_jp:"私は一人で旅行します。", blank:"seul(e)", masterOrder:397 },
+  { id:"n0398", fr:"rapide", jp:"速い", pos:"形容詞", ex_fr:"Ce train est très rapide.", ex_jp:"この電車はとても速いです。", blank:"rapide", masterOrder:398 },
+  { id:"n0399", fr:"lent(e)", jp:"遅い", pos:"形容詞", ex_fr:"Mon ordinateur est lent.", ex_jp:"私のパソコンは遅いです。", blank:"lent(e)", masterOrder:399 },
+  { id:"n0400", fr:"maigre", jp:"痩せた", pos:"形容詞", ex_fr:"Il est très maigre.", ex_jp:"彼はとても痩せています。", blank:"maigre", masterOrder:400 },
+  { id:"n0401", fr:"mauvais(e)", jp:"悪い", pos:"形容詞", ex_fr:"Il fait mauvais aujourd'hui.", ex_jp:"今日は天気が悪いです。", blank:"mauvais(e)", masterOrder:401 },
+  { id:"n0402", fr:"pire", jp:"より悪い", pos:"形容詞", ex_fr:"C'est la pire chose qui puisse arriver.", ex_jp:"それは起こりうる最悪の事態です。", blank:"pire", masterOrder:402 },
+  { id:"n0403", fr:"utile", jp:"役に立つ", pos:"形容詞", ex_fr:"Cette information est très utile.", ex_jp:"この情報はとても役に立ちます。", blank:"utile", masterOrder:403 },
+  { id:"n0404", fr:"inutile", jp:"役に立たない", pos:"形容詞", ex_fr:"Il est inutile de pleurer.", ex_jp:"泣いても無駄です。", blank:"inutile", masterOrder:404 },
+  { id:"n0405", fr:"prêt(e)", jp:"準備ができた", pos:"形容詞", ex_fr:"Êtes-vous prêt ?", ex_jp:"準備はできましたか？", blank:"prêt(e)", masterOrder:405 },
+  { id:"n0406", fr:"plusieurs", jp:"いくつかの", pos:"形容詞/代名詞", ex_fr:"J'ai plusieurs questions.", ex_jp:"いくつかの質問があります。", blank:"plusieurs", masterOrder:406 },
+  { id:"n0407", fr:"quelque", jp:"いくつかの", pos:"形容詞", ex_fr:"J'ai besoin de quelques minutes.", ex_jp:"数分必要です。", blank:"quelque", masterOrder:407 },
+  { id:"n0408", fr:"voisin(e)", jp:"隣の", pos:"形容詞/名詞", ex_fr:"J'ai parlé à mon voisin.", ex_jp:"隣人と話しました。", blank:"voisin(e)", masterOrder:408 },
+  { id:"n0409", fr:"dur(e)", jp:"硬い、厳しい", pos:"形容詞", ex_fr:"Ce travail est dur.", ex_jp:"この仕事は厳しいです。", blank:"dur(e)", masterOrder:409 },
+  { id:"n0410", fr:"tendre", jp:"柔らかい", pos:"形容詞", ex_fr:"Cette viande est très tendre.", ex_jp:"このお肉はとても柔らかいです。", blank:"tendre", masterOrder:410 },
+  { id:"n0411", fr:"étudiant(e)", jp:"学生", pos:"名詞（男・女）", ex_fr:"Je suis étudiant à l'université.", ex_jp:"私は大学の学生です。", blank:"étudiant(e)", masterOrder:411 },
+  { id:"n0412", fr:"élève", jp:"生徒", pos:"名詞（男・女）", ex_fr:"Il y a 30 élèves dans cette classe.", ex_jp:"このクラスには30人の生徒がいます。", blank:"élève", masterOrder:412 },
+  { id:"n0413", fr:"ami(e)", jp:"友人", pos:"名詞（男・女）", ex_fr:"Je sors avec mes amis ce soir.", ex_jp:"今夜は友人と出かけます。", blank:"ami(e)", masterOrder:413 },
+  { id:"n0414", fr:"enfant", jp:"子供", pos:"名詞（男・女）", ex_fr:"Les enfants jouent dans le parc.", ex_jp:"子供たちが公園で遊んでいます。", blank:"enfant", masterOrder:414 },
+  { id:"n0415", fr:"avocat(e)", jp:"弁護士", pos:"名詞（男・女）", ex_fr:"Elle est avocate.", ex_jp:"彼女は弁護士です。", blank:"avocat(e)", masterOrder:415 },
+  { id:"n0416", fr:"cousin(e)", jp:"いとこ", pos:"名詞（男・女）", ex_fr:"Mon cousin vient d'Italie.", ex_jp:"私のいとこはイタリア出身です。", blank:"cousin(e)", masterOrder:416 },
+  { id:"n0417", fr:"médecin", jp:"医者", pos:"名詞（男）", ex_fr:"Il faut appeler un médecin.", ex_jp:"医者を呼ばなければなりません。", blank:"médecin", masterOrder:417 },
+  { id:"n0418", fr:"infirmier / infirmière", jp:"看護師", pos:"名詞（男・女）", ex_fr:"L'infirmière s'occupe des patients.", ex_jp:"看護師が患者の世話をします。", blank:"infirmier / infirmière", masterOrder:418 },
+  { id:"n0419", fr:"acteur / actrice", jp:"俳優", pos:"名詞（男・女）", ex_fr:"C'est un acteur célèbre.", ex_jp:"彼は有名な俳優です。", blank:"acteur / actrice", masterOrder:419 },
+  { id:"n0420", fr:"adulte", jp:"大人", pos:"名詞（男・女）", ex_fr:"Ce film est pour les adultes.", ex_jp:"この映画は大人向けです。", blank:"adulte", masterOrder:420 },
+  { id:"n0421", fr:"musicien(ne)", jp:"音楽家", pos:"名詞（男・女）", ex_fr:"Mon frère est musicien.", ex_jp:"私の兄弟は音楽家です。", blank:"musicien(ne)", masterOrder:421 },
+  { id:"n0422", fr:"chanteur / chanteuse", jp:"歌手", pos:"名詞（男・女）", ex_fr:"Céline Dion est une chanteuse célèbre.", ex_jp:"セリーヌ・ディオンは有名な歌手です。", blank:"chanteur / chanteuse", masterOrder:422 },
+  { id:"n0423", fr:"danseur / danseuse", jp:"踊り手", pos:"名詞（男・女）", ex_fr:"Elle est danseuse professionnelle.", ex_jp:"彼女はプロのダンサーです。", blank:"danseur / danseuse", masterOrder:423 },
+  { id:"n0424", fr:"artiste", jp:"芸術家", pos:"名詞（男・女）", ex_fr:"Picasso était un grand artiste.", ex_jp:"ピカソは偉大な芸術家でした。", blank:"artiste", masterOrder:424 },
+  { id:"n0425", fr:"collègue", jp:"同僚", pos:"名詞（男・女）", ex_fr:"Je dîne avec un collègue ce soir.", ex_jp:"今夜は同僚と夕食をとります。", blank:"collègue", masterOrder:425 },
+  { id:"n0426", fr:"épicier / épicière", jp:"食料品店主", pos:"名詞（男・女）", ex_fr:"J'ai acheté des fruits chez l'épicier.", ex_jp:"食料品店主のところで果物を買いました。", blank:"épicier / épicière", masterOrder:426 },
+  { id:"n0427", fr:"fiancé(e)", jp:"婚約者", pos:"名詞（男・女）", ex_fr:"Voici mon fiancé.", ex_jp:"こちらが私の婚約者です。", blank:"fiancé(e)", masterOrder:427 },
+  { id:"n0428", fr:"célibataire", jp:"独身者", pos:"名詞（男・女）", ex_fr:"Il est encore célibataire.", ex_jp:"彼はまだ独身です。", blank:"célibataire", masterOrder:428 },
+  { id:"n0429", fr:"aujourd'hui", jp:"今日", pos:"副詞", ex_fr:"Quel jour sommes-nous aujourd'hui ?", ex_jp:"今日は何曜日ですか？", blank:"aujourd'hui", masterOrder:429 },
+  { id:"n0430", fr:"hier", jp:"昨日", pos:"副詞", ex_fr:"J'étais occupé hier.", ex_jp:"昨日は忙しかったです。", blank:"hier", masterOrder:430 },
+  { id:"n0431", fr:"demain", jp:"明日", pos:"副詞", ex_fr:"À demain !", ex_jp:"また明日！", blank:"demain", masterOrder:431 },
+  { id:"n0432", fr:"très", jp:"とても", pos:"副詞", ex_fr:"Je suis très fatigué.", ex_jp:"とても疲れています。", blank:"très", masterOrder:432 },
+  { id:"n0433", fr:"ici", jp:"ここに", pos:"副詞", ex_fr:"Venez ici.", ex_jp:"ここに来てください。", blank:"ici", masterOrder:433 },
+  { id:"n0434", fr:"là / là-bas", jp:"そこに / あそこに", pos:"副詞", ex_fr:"Regardez là-bas !", ex_jp:"あそこを見て！", blank:"là / là-bas", masterOrder:434 },
+  { id:"n0435", fr:"juste", jp:"正確に、ただ～だけ", pos:"副詞", ex_fr:"C'est juste à côté.", ex_jp:"それはすぐ隣です。", blank:"juste", masterOrder:435 },
+  { id:"n0436", fr:"loin", jp:"遠くに", pos:"副詞", ex_fr:"L'école est loin d'ici.", ex_jp:"学校はここから遠いです。", blank:"loin", masterOrder:436 },
+  { id:"n0437", fr:"près", jp:"近くに", pos:"副詞", ex_fr:"J'habite près de la gare.", ex_jp:"私は駅の近くに住んでいます。", blank:"près", masterOrder:437 },
+  { id:"n0438", fr:"à côté", jp:"隣に", pos:"副詞", ex_fr:"Asseyez-vous à côté de moi.", ex_jp:"私の隣に座ってください。", blank:"à côté", masterOrder:438 },
+  { id:"n0439", fr:"devant", jp:"前に", pos:"副詞", ex_fr:"Il y a une voiture devant la maison.", ex_jp:"家の前に車があります。", blank:"devant", masterOrder:439 },
+  { id:"n0440", fr:"derrière", jp:"後ろに", pos:"副詞", ex_fr:"Le jardin est derrière la maison.", ex_jp:"庭は家の後ろにあります。", blank:"derrière", masterOrder:440 },
+  { id:"n0441", fr:"de temps en temps", jp:"時々", pos:"副詞", ex_fr:"Je joue au tennis de temps en temps.", ex_jp:"時々テニスをします。", blank:"de temps en temps", masterOrder:441 },
+  { id:"n0442", fr:"souvent", jp:"しばしば", pos:"副詞", ex_fr:"Il va souvent au cinéma.", ex_jp:"彼はしばしば映画館に行きます。", blank:"souvent", masterOrder:442 },
+  { id:"n0443", fr:"toujours", jp:"いつも", pos:"副詞", ex_fr:"Elle est toujours en retard.", ex_jp:"彼女はいつも遅刻します。", blank:"toujours", masterOrder:443 },
+  { id:"n0444", fr:"tout droit", jp:"まっすぐ", pos:"副詞", ex_fr:"Allez tout droit.", ex_jp:"まっすぐ進んでください。", blank:"tout droit", masterOrder:444 },
+  { id:"n0445", fr:"bien", jp:"よく、上手に", pos:"副詞", ex_fr:"Vous parlez très bien français.", ex_jp:"あなたはフランス語をとても上手に話しますね。", blank:"bien", masterOrder:445 },
+  { id:"n0446", fr:"mal", jp:"悪く、下手に", pos:"副詞", ex_fr:"J'ai mal dormi cette nuit.", ex_jp:"昨夜はよく眠れませんでした。", blank:"mal", masterOrder:446 },
+  { id:"n0447", fr:"mieux", jp:"よりよく", pos:"副詞", ex_fr:"C'est beaucoup mieux.", ex_jp:"その方がずっと良いです。", blank:"mieux", masterOrder:447 },
+  { id:"n0448", fr:"seulement", jp:"ただ～だけ", pos:"副詞", ex_fr:"J'ai seulement 10 euros.", ex_jp:"私は10ユーロしか持っていません。", blank:"seulement", masterOrder:448 },
+  { id:"n0449", fr:"quand", jp:"いつ", pos:"副詞（疑問）", ex_fr:"Quand partez-vous ?", ex_jp:"いつ出発しますか？", blank:"quand", masterOrder:449 },
+  { id:"n0450", fr:"où", jp:"どこで", pos:"副詞（疑問）", ex_fr:"Où habitez-vous ?", ex_jp:"どこに住んでいますか？", blank:"où", masterOrder:450 },
+  { id:"n0451", fr:"maintenant", jp:"今", pos:"副詞", ex_fr:"Je dois partir maintenant.", ex_jp:"今、出発しなければなりません。", blank:"maintenant", masterOrder:451 },
+  { id:"n0452", fr:"bientôt", jp:"まもなく", pos:"副詞", ex_fr:"À bientôt !", ex_jp:"また近いうちに！", blank:"bientôt", masterOrder:452 },
+  { id:"n0453", fr:"longtemps", jp:"長い間", pos:"副詞", ex_fr:"Je l'ai attendu longtemps.", ex_jp:"私は彼を長い間待ちました。", blank:"longtemps", masterOrder:453 },
+  { id:"n0454", fr:"peut-être", jp:"たぶん", pos:"副詞", ex_fr:"Il viendra peut-être demain.", ex_jp:"彼はたぶん明日来るでしょう。", blank:"peut-être", masterOrder:454 },
+  { id:"n0455", fr:"sans doute", jp:"おそらく", pos:"副詞", ex_fr:"Il a sans doute oublié.", ex_jp:"彼は恐らく忘れたのでしょう。", blank:"sans doute", masterOrder:455 },
+  { id:"n0456", fr:"déjà", jp:"すでに", pos:"副詞", ex_fr:"Il est déjà parti.", ex_jp:"彼はすでに出発しました。", blank:"déjà", masterOrder:456 },
+  { id:"n0457", fr:"beaucoup", jp:"たくさん", pos:"副詞", ex_fr:"Merci beaucoup.", ex_jp:"どうもありがとうございます。", blank:"beaucoup", masterOrder:457 },
+  { id:"n0458", fr:"trop", jp:"あまりに～すぎる", pos:"副詞", ex_fr:"C'est trop cher !", ex_jp:"それは高すぎます！", blank:"trop", masterOrder:458 },
+  { id:"n0459", fr:"pourquoi", jp:"なぜ", pos:"副詞（疑問）", ex_fr:"Pourquoi êtes-vous en retard ?", ex_jp:"なぜ遅刻したのですか？", blank:"pourquoi", masterOrder:459 },
+  { id:"n0460", fr:"comment", jp:"どのように", pos:"副詞（疑問）", ex_fr:"Comment allez-vous ?", ex_jp:"ご機嫌いかがですか？", blank:"comment", masterOrder:460 },
+  { id:"n0461", fr:"combien", jp:"いくら、どのくらい", pos:"副詞（疑問）", ex_fr:"Ça coûte combien ?", ex_jp:"それはいくらですか？", blank:"combien", masterOrder:461 },
+  { id:"n0462", fr:"bien sûr", jp:"もちろん", pos:"副詞", ex_fr:"Bien sûr que oui !", ex_jp:"もちろんそうです！", blank:"bien sûr", masterOrder:462 },
+  { id:"n0463", fr:"d'accord", jp:"了解", pos:"副詞", ex_fr:"Je suis d'accord avec vous.", ex_jp:"あなたに賛成します。", blank:"d'accord", masterOrder:463 },
+  { id:"n0464", fr:"encore", jp:"まだ、さらに", pos:"副詞", ex_fr:"Voulez-vous encore du café ?", ex_jp:"コーヒーをさらにいかがですか？", blank:"encore", masterOrder:464 },
+  { id:"n0465", fr:"ensemble", jp:"一緒に", pos:"副詞", ex_fr:"Allons-y ensemble.", ex_jp:"一緒に行きましょう。", blank:"ensemble", masterOrder:465 },
+  { id:"n0466", fr:"alors", jp:"それでは、その時", pos:"副詞", ex_fr:"Alors, que fait-on ?", ex_jp:"それでは、何をしましょうか？", blank:"alors", masterOrder:466 },
+  { id:"n0467", fr:"vite", jp:"速く", pos:"副詞", ex_fr:"Ne parlez pas si vite.", ex_jp:"そんなに速く話さないでください。", blank:"vite", masterOrder:467 },
+  { id:"n0468", fr:"rapidement", jp:"素早く", pos:"副詞", ex_fr:"Il faut agir rapidement.", ex_jp:"素早く行動しなければなりません。", blank:"rapidement", masterOrder:468 },
+  { id:"n0469", fr:"tout de suite", jp:"すぐに", pos:"副詞", ex_fr:"Je reviens tout de suite.", ex_jp:"すぐに戻ります。", blank:"tout de suite", masterOrder:469 },
+  { id:"n0470", fr:"lentement", jp:"ゆっくりと", pos:"副詞", ex_fr:"Parlez plus lentement, s'il vous plaît.", ex_jp:"もっとゆっくり話してください。", blank:"lentement", masterOrder:470 },
+  { id:"n0471", fr:"si", jp:"もし、そんなに", pos:"接続詞/副詞", ex_fr:"S'il fait beau, nous sortirons.", ex_jp:"もし天気が良ければ、私たちは出かけます。", blank:"si", masterOrder:471 },
+  { id:"n0472", fr:"généralement", jp:"一般的に", pos:"副詞", ex_fr:"Généralement, je dîne à 19 heures.", ex_jp:"一般的に、私は19時に夕食をとります。", blank:"généralement", masterOrder:472 }
+];
+
+// 進捗データ（id基準・WORDS配列の並びに非依存）
+let fillProgress = {};
+WORDS.forEach(w => { fillProgress[w.id] = { level:0, nextReview:0, introduced:false }; });
+
+let dayNum = 1;
+let order = [];       // 本日のキュー（word.id の配列）
+let idx = 0;
+let hinted = false, answered = false;
+let log = [];
+
+// ===== localStorage 保存・読み込み =====
+const STORAGE_KEY = 'fr_fill_v1';
+
+function saveProgress() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ fillProgress, dayNum }));
+  } catch(e) {}
+}
+
+function loadProgress() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (!saved) return;
+    if (saved.fillProgress) {
+      WORDS.forEach(w => {
+        if (saved.fillProgress[w.id]) fillProgress[w.id] = saved.fillProgress[w.id];
+      });
+    }
+    if (saved.dayNum) dayNum = saved.dayNum;
+  } catch(e) {}
+}
+
+loadProgress();
+
+function normalize(s) {
+  return s.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ');
+}
+function speak(text) {
+  if (!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'fr-FR'; u.rate = 0.9;
+  speechSynthesis.speak(u);
+}
+function wordById(id) { return WORDS.find(w => w.id === id); }
+
+// ===== デイリー出題ロジック =====
+function buildTodaySet() {
+  const dueReviews = WORDS
+    .filter(w => fillProgress[w.id].introduced && fillProgress[w.id].nextReview <= Date.now())
+    .sort((a,b) => fillProgress[a.id].nextReview - fillProgress[b.id].nextReview)
+    .slice(0, REVIEW_CAP)
+    .map(w => w.id);
+
+  const remainingSlots = Math.max(0, DAILY_TOTAL - dueReviews.length);
+  const newWords = WORDS
+    .filter(w => !fillProgress[w.id].introduced)
+    .sort((a,b) => a.masterOrder - b.masterOrder)
+    .slice(0, remainingSlots)
+    .map(w => w.id);
+
+  const combined = [...dueReviews, ...newWords];
+  for (let i = combined.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [combined[i], combined[j]] = [combined[j], combined[i]];
+  }
+  return { queue: combined, reviewCount: dueReviews.length, newCount: newWords.length };
+}
+
+function renderDayInfo() {
+  document.getElementById('day-num').textContent = dayNum;
+  document.getElementById('progress-fill').style.width = '0%';
+  const { queue, reviewCount, newCount } = buildTodaySet();
+  order = queue; idx = 0; log = [];
+
+  if (queue.length === 0) {
+    const masteredCount = WORDS.filter(w => fillProgress[w.id].level >= LEVEL_DAYS.length).length;
+    document.getElementById('main-area').innerHTML = `
+      <div class="empty-note">
+        🎉 本日の学習は完了しています！<br><br>
+        復習単語がまだ期限に達していません。<br>
+        明日またアプリを開いてください。<br><br>
+        <span style="font-size:11px">習得済み：${masteredCount} / ${WORDS.length} 語</span>
+      </div>
+    `;
+    return;
+  }
+
+  document.getElementById('main-area').innerHTML = `
+    <div class="day-info">
+      <div class="big">Day ${dayNum}</div>
+      <h2>本日の学習予定</h2>
+      <div class="quota-row">
+        <div class="quota-box"><div class="n">${queue.length}</div><div class="l">合計</div></div>
+        <div class="quota-box"><div class="n">${newCount}</div><div class="l">新規</div></div>
+        <div class="quota-box"><div class="n">${reviewCount}</div><div class="l">復習</div></div>
+      </div>
+      <div class="quota-note">
+        1日合計${DAILY_TOTAL}語・復習上限${REVIEW_CAP}語。<br>
+        正解するごとにレベルが上がり、復習間隔が延びます（1日・3日・1週間・1ヶ月・3ヶ月）。
+      </div>
+      <button class="start-btn" onclick="startQueue()">学習を始める</button>
+    </div>
+  `;
+}
+
+function startQueue() { idx = 0; render(); }
+
+function render() {
+  if (idx >= order.length) { renderDaySummary(); return; }
+  const wid = order[idx];
+  const w = wordById(wid);
+  const prog = fillProgress[wid];
+  hinted = false; answered = false;
+
+  document.getElementById('progress-fill').style.width = (idx / order.length * 100) + '%';
+
+  const blankRegex = new RegExp(w.blank.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+  const sentenceHtml = w.ex_fr.replace(blankRegex, '<span class="blank-slot">?????</span>');
+  const isNew = !prog.introduced;
+  const badgeClass = isNew ? 'new' : 'review';
+  const badgeLabel = isNew ? '新規' : `復習 ・ Lv.${prog.level}`;
+
+  document.getElementById('main-area').innerHTML = `
+    <div class="level-badge ${badgeClass}">${badgeLabel}　(${idx+1}/${order.length})</div>
+    <div class="card">
+      <div class="pos-tag">${w.pos}</div>
+      <div class="jp-sentence">${w.ex_jp}</div>
+      <div class="fr-sentence">${sentenceHtml}</div>
+      <div class="input-row">
+        <input type="text" class="answer-input" id="answer-input" placeholder="空欄に入る単語を入力" autocomplete="off" autocapitalize="off" spellcheck="false">
+      </div>
+      <div class="accent-row" id="accent-row"></div>
+      <div class="hint-text" id="hint-text" style="display:none"></div>
+      <div class="action-row">
+        <button class="hint-btn" onclick="showHint()">ヒントを見る</button>
+        <button class="submit-btn" onclick="submitAnswer()">判定する</button>
+      </div>
+      <div class="feedback" id="feedback"></div>
+      <button class="next-btn" id="next-btn" onclick="nextWord()">次へ →</button>
+    </div>
+  `;
+  const accents = ['é','è','ê','ë','à','â','ù','û','î','ï','ô','ö','ç','œ'];
+  document.getElementById('accent-row').innerHTML = accents.map(c =>
+    `<button type="button" class="accent-btn" onclick="insertChar('${c}')">${c}</button>`).join('');
+  // PCのみ自動フォーカス（スマホはタップで入力）
+  if (!/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+    document.getElementById('answer-input').focus();
+  }
+}
+
+function insertChar(c) {
+  const input = document.getElementById('answer-input');
+  const start = input.selectionStart, end = input.selectionEnd;
+  input.value = input.value.slice(0, start) + c + input.value.slice(end);
+  input.focus();
+  input.selectionStart = input.selectionEnd = start + c.length;
+}
+
+function showHint() {
+  if (hinted) return;
+  hinted = true;
+  const w = wordById(order[idx]);
+  document.getElementById('hint-text').style.display = 'block';
+  document.getElementById('hint-text').textContent = `ヒント：${w.blank.charAt(0)}...（${w.blank.length}文字）`;
+}
+
+function submitAnswer() {
+  if (answered) return;
+  answered = true;
+  const wid = order[idx];
+  const w = wordById(wid);
+  const prog = fillProgress[wid];
+  const input = document.getElementById('answer-input');
+  const isCorrect = normalize(input.value) === normalize(w.blank);
+
+  const before = prog.level;
+  let after;
+  if (isCorrect) {
+    after = Math.min(before + 1, LEVEL_DAYS.length);
+    prog.nextReview = Date.now() + (LEVEL_DAYS[before] ?? LEVEL_DAYS[LEVEL_DAYS.length-1]) * DAY_MS;
+  } else {
+    after = 0;
+    prog.nextReview = Date.now() + LEVEL_DAYS[0] * DAY_MS;
+    const reinsertPos = Math.min(idx + 10, order.length);
+    order.splice(reinsertPos, 0, wid);
+  }
+  prog.level = after;
+  prog.introduced = true;
+  log.push({ fr: w.fr, before, after, correct: isCorrect });
+
+  input.classList.add(isCorrect ? 'correct' : 'wrong');
+  input.disabled = true;
+  saveProgress(); // 進捗をlocalStorageに保存
+  speak(w.ex_fr); // 回答後に音声再生
+
+  const fb = document.getElementById('feedback');
+  fb.classList.add('visible', isCorrect ? 'correct' : 'wrong');
+  fb.innerHTML = isCorrect
+    ? `正解！ <div class="answer-reveal">${w.blank}</div>`
+    : `不正解 — 正解は <div class="answer-reveal">${w.blank}</div><div style="font-size:11px;margin-top:8px;color:var(--text-muted)">この単語は約10問後に再出題されます</div>`;
+  document.getElementById('next-btn').classList.add('visible');
+}
+
+function nextWord() { idx++; render(); }
+
+function renderDaySummary() {
+  document.getElementById('progress-fill').style.width = '100%';
+  const correctCount = log.filter(l => l.correct).length;
+  const masteredCount = WORDS.filter(w => fillProgress[w.id].level >= LEVEL_DAYS.length).length;
+  document.getElementById('main-area').innerHTML = `
+    <div class="card summary">
+      <div class="big">✓</div>
+      <h2>Day ${dayNum} 終了　${correctCount} / ${log.length} 問正解</h2>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:20px">習得済み：${masteredCount} / ${WORDS.length} 語</div>
+      <table class="summary-table">
+        <tr><th>単語</th><th>結果</th><th>レベル変化</th></tr>
+        ${log.map(l => `
+          <tr>
+            <td>${l.fr}</td>
+            <td>${l.correct ? '<span style="color:var(--green)">○</span>' : '<span style="color:var(--red)">×</span>'}</td>
+            <td><span class="lv-pill ${l.correct ? 'up' : 'reset'}">Lv.${l.before} → Lv.${l.after}</span></td>
+          </tr>`).join('')}
+      </table>
+      <button class="restart-btn" onclick="goMenu()">メニューに戻る</button>
+    </div>
+  `;
+}
+
+function goMenu() {
+  dayNum++;
+  saveProgress();
+  renderDayInfo();
+}
+
+function advanceDay() {
+  dayNum++;
+  saveProgress();
+  renderDayInfo();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    if (order[idx] === undefined) return;
+    if (!answered) submitAnswer();
+    else {
+      const nb = document.getElementById('next-btn');
+      if (nb && nb.classList.contains('visible')) nextWord();
+    }
+  }
+});
+
+renderDayInfo();
+
+// ===== PWA Service Worker =====
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
