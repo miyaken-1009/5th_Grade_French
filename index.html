@@ -18,7 +18,7 @@
     --red:#b03020; --green:#2a7848; --blue:#2a5a90; --orange:#b86820;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:var(--bg); color:var(--text); font-family:'Noto Serif JP', serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; }
+  body { background:var(--bg); color:var(--text); font-family:'Noto Serif JP', serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; overflow-y:auto; -webkit-overflow-scrolling:touch; }
   header { width:100%; max-width:620px; padding:32px 24px 0; display:flex; align-items:baseline; gap:16px; }
   .logo { font-family:'Playfair Display', serif; font-size:20px; letter-spacing:0.04em; color:var(--accent); }
   .logo span { font-style:italic; }
@@ -29,7 +29,7 @@
   .progress-track { height:2px; background:var(--border); border-radius:1px; overflow:hidden; }
   .progress-fill { height:100%; background:linear-gradient(90deg,#4a433c,var(--accent)); transition:width .5s ease; }
 
-  main { width:100%; max-width:620px; padding:36px 24px 60px; flex:1; display:flex; flex-direction:column; align-items:center; }
+  main { width:100%; max-width:620px; padding:36px 24px 60px; flex:1 0 auto; display:flex; flex-direction:column; align-items:center; }
 
   /* Day info screen */
   .day-info { text-align:center; width:100%; }
@@ -42,49 +42,44 @@
   .quota-note { font-size:11.5px; color:var(--text-muted); line-height:1.7; margin-bottom:26px; text-align:left; background:var(--surface); border:1px solid var(--border); padding:14px 16px; border-radius:4px; }
   .start-btn { width:100%; padding:16px; background:var(--accent); color:#fff; border:none; border-radius:4px; font-family:'Playfair Display', serif; font-size:16px; cursor:pointer; }
   .start-btn:hover { background:var(--accent-dim); }
-  .start-btn:disabled { opacity:0.4; cursor:default; }
 
   .level-badge { font-size:10px; letter-spacing:0.18em; text-transform:uppercase; padding:4px 12px; border-radius:20px; margin-bottom:22px; border:1px solid; }
   .level-badge.new { color:var(--accent); border-color:rgba(42,37,32,0.25); background:rgba(42,37,32,0.04); }
   .level-badge.review { color:var(--blue); border-color:rgba(42,90,144,0.35); background:rgba(42,90,144,0.06); }
 
-  .card { width:100%; background:var(--card); border:1px solid var(--border); border-radius:4px; padding:44px 40px 36px; position:relative; }
+  .card { width:100%; background:var(--card); border:1px solid var(--border); border-radius:4px; padding:44px 40px 36px; position:relative; display:flex; flex-direction:column; }
   .card::before { content:''; position:absolute; top:0; left:0; width:3px; height:100%; background:linear-gradient(180deg,var(--accent),transparent); border-radius:4px 0 0 4px; }
-  .pos-tag { font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--text-muted); margin-bottom:18px; font-family:'Playfair Display', serif; font-style:italic; }
-  .jp-sentence { font-size:22px; font-weight:300; color:var(--accent); line-height:1.6; margin-bottom:28px; letter-spacing:0.02em; }
-  .fr-sentence { font-family:'Playfair Display', serif; font-size:22px; color:var(--text-dim); line-height:1.7; margin-bottom:22px; }
+  
+  /* レイアウト順序制御 */
+  .pos-tag { order: 3; font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--text-muted); margin-bottom:18px; font-family:'Playfair Display', serif; font-style:italic; }
+  .jp-sentence { order: 4; font-size:22px; font-weight:300; color:var(--accent); line-height:1.6; margin-bottom:28px; letter-spacing:0.02em; }
+  .fr-sentence { order: 5; font-family:'Playfair Display', serif; font-size:22px; color:var(--text-dim); line-height:1.7; margin-bottom:22px; }
   .blank-slot { display:inline-block; min-width:90px; border-bottom:2px solid var(--accent); text-align:center; color:var(--text-muted); font-style:italic; padding:0 4px; }
 
-  .input-row { display:flex; gap:8px; margin-bottom:14px; }
+  /* 判定欄最上部配置用 */
+  .input-row { order: 1; display:flex; gap:8px; margin-bottom:14px; }
   .answer-input { flex:1; font-family:'Noto Serif JP', serif; font-size:16px; padding:12px 14px; border:1px solid var(--border); border-radius:4px; background:var(--surface); color:var(--text); outline:none; transition:border-color .2s; }
   .answer-input:focus { border-color:var(--accent-dim); }
   .answer-input.correct { border-color:var(--green); background:rgba(42,120,72,0.06); }
   .answer-input.wrong { border-color:var(--red); background:rgba(176,48,32,0.06); }
 
-  .accent-row { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:22px; }
-  .accent-btn { font-family:'Playfair Display', serif; font-size:14px; padding:6px 11px; border:1px solid var(--border); border-radius:3px; background:var(--surface); color:var(--text-dim); cursor:pointer; transition:all .15s; }
-  .accent-btn:hover { border-color:var(--accent-dim); color:var(--accent); }
-
-  .action-row { display:flex; gap:10px; }
-  .hint-btn, .submit-btn { font-family:'Noto Serif JP', serif; font-size:13px; letter-spacing:0.05em; padding:12px 20px; border-radius:4px; cursor:pointer; border:1px solid var(--border); background:transparent; color:var(--text-dim); transition:all .18s; }
+  .action-row { order: 2; display:flex; gap:10px; margin-bottom:24px; }
+  .hint-btn, .submit-btn, .next-action-btn { font-family:'Noto Serif JP', serif; font-size:13px; letter-spacing:0.05em; padding:12px 20px; border-radius:4px; cursor:pointer; border:1px solid var(--border); background:transparent; color:var(--text-dim); transition:all .18s; }
   .hint-btn:hover { border-color:var(--accent-dim); color:var(--accent); }
-  .submit-btn { flex:1; background:var(--accent); color:#fff; border:none; }
-  .submit-btn:hover { background:var(--accent-dim); }
-  .hint-text { font-size:12px; color:var(--text-muted); margin-top:-10px; margin-bottom:18px; letter-spacing:0.04em; }
+  .submit-btn, .next-action-btn { flex:1; background:var(--accent); color:#fff; border:none; text-align:center; }
+  .submit-btn:hover, .next-action-btn:hover { background:var(--accent-dim); }
+  
+  .hint-text { order: 1; font-size:12px; color:var(--text-muted); margin-top:-8px; margin-bottom:14px; letter-spacing:0.04em; }
 
-  .feedback { display:none; margin-top:20px; padding:16px 20px; border-radius:4px; font-size:14px; line-height:1.7; }
+  .feedback { order: 6; display:none; margin-top:20px; padding:16px 20px; border-radius:4px; font-size:14px; line-height:1.7; }
   .feedback.visible { display:block; animation:fadeUp .3s ease; }
   .feedback.correct { background:rgba(42,120,72,0.06); border:1px solid rgba(42,120,72,0.3); color:var(--green); }
   .feedback.wrong { background:rgba(176,48,32,0.06); border:1px solid rgba(176,48,32,0.3); color:var(--red); }
   .feedback .answer-reveal { font-family:'Playfair Display', serif; font-size:17px; margin-top:6px; color:var(--text-dim); }
 
-  .next-btn { margin-top:20px; padding:12px 28px; background:var(--accent); color:#fff; border:none; border-radius:4px; font-family:'Playfair Display', serif; font-size:15px; cursor:pointer; display:none; }
-  .next-btn.visible { display:inline-block; animation:fadeUp .3s ease; }
-  .next-btn:hover { background:var(--accent-dim); }
-
   @keyframes fadeUp { from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
 
-  .summary { text-align:center; width:100%; }
+  .summary { text-align:center; width:100%; display:block; }
   .summary .big { font-family:'Playfair Display', serif; font-size:52px; color:var(--accent); margin-bottom:14px; }
   .summary h2 { font-size:18px; font-weight:400; color:var(--text-dim); margin-bottom:22px; }
   .summary-table { width:100%; text-align:left; border-collapse:collapse; margin-bottom:24px; }
@@ -98,48 +93,26 @@
 
   .empty-note { text-align:center; padding:40px 20px; color:var(--text-muted); font-size:13px; line-height:1.8; }
 
-  /* ===== タッチ操作：全ボタン共通 ===== */
   button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 
-  /* ===== スマホ最適化 ===== */
   @media (max-width: 540px) {
     header { padding: 20px 16px 0; }
     main { padding: 24px 16px 80px; }
     .progress-wrap { padding: 12px 16px 0; }
-
-    /* カードのパディングを縮小 */
     .card { padding: 28px 20px 24px; }
-
-    /* 日本語文・フランス語文サイズ調整 */
-    .jp-sentence { font-size: 19px; }
-    .fr-sentence { font-size: 19px; }
-
-    /* 入力欄を大きく（タッチしやすく） */
+    .jp-sentence, .fr-sentence { font-size: 19px; }
     .answer-input { font-size: 18px; padding: 14px 12px; }
-
-    /* アクセント文字ボタンを大きく */
-    .accent-btn { font-size: 18px; padding: 10px 12px; min-height: 44px; min-width: 44px; }
-
-    /* アクションボタンを縦並び */
-    .action-row { flex-direction: column; gap: 10px; }
-    .hint-btn, .submit-btn { padding: 16px; font-size: 15px; width: 100%; }
-
-    /* 次へボタン */
-    .next-btn { width: 100%; padding: 16px; font-size: 16px; text-align: center; }
-
-    /* Day info画面 */
+    .action-row { flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    .hint-btn, .submit-btn, .next-action-btn { padding: 16px; font-size: 15px; width: 100%; }
     .day-info .big { font-size: 40px; }
     .start-btn { padding: 18px; font-size: 17px; }
     .quota-box .n { font-size: 26px; }
     .quota-note { font-size: 12px; }
-
-    /* サマリー */
     .summary .big { font-size: 40px; }
     .summary-table th, .summary-table td { font-size: 12px; padding: 8px 6px; }
     .restart-btn { padding: 16px; font-size: 15px; }
   }
 
-  /* iPhone ノッチ対応 */
   body { padding-bottom: env(safe-area-inset-bottom); }
 </style>
 </head>
@@ -153,24 +126,10 @@
 <main id="main-area"></main>
 
 <script>
-/* =====================================================================
-   ★データ設計メモ（401語追加時の指針）
-   - WORDS：単語の内容（静的データ）。id と masterOrder を持つ。
-     401語を追記する際は、この配列の末尾にオブジェクトを追加していくだけでよい。
-     masterOrder は「新規語をどの順で繰り出すか」の通し番号（並べ替え厳禁）。
-   - fillProgress：学習の進捗（動的データ）。id をキーにした別オブジェクトで
-     保持する（本番では localStorage / window.storage に保存）。
-     WORDS配列の並び順やインデックスに一切依存しないため、
-     途中に単語を挿入しても既存の進捗データは壊れない。
-   ===================================================================== */
-
 const LEVEL_DAYS = [1, 3, 7, 30, 90];
 const DAY_MS = 24 * 60 * 60 * 1000;
-
-// ★本番想定：復習上限50・1日合計100。10語デモ用に縮小（復習3・合計5）。
 const REVIEW_CAP = 50;
 const DAILY_TOTAL = 100;
-
 const WORDS = [
   { id:"n0001", fr:"femme", jp:"女、妻", pos:"名詞（女）", ex_fr:"C'est une femme indépendante.", ex_jp:"彼女は自立した女性です。", blank:"femme", masterOrder:1 },
   { id:"n0002", fr:"mère", jp:"母", pos:"名詞（女）", ex_fr:"Ma mère habite à Paris.", ex_jp:"私の母はパリに住んでいます。", blank:"mère", masterOrder:2 },
@@ -646,18 +605,17 @@ const WORDS = [
   { id:"n0472", fr:"généralement", jp:"一般的に", pos:"副詞", ex_fr:"Généralement, je dîne à 19 heures.", ex_jp:"一般的に、私は19時に夕食をとります。", blank:"généralement", masterOrder:472 }
 ];
 
-// 進捗データ（id基準・WORDS配列の並びに非依存）
+let currentUtterance = null;
 let fillProgress = {};
 WORDS.forEach(w => { fillProgress[w.id] = { level:0, nextReview:0, introduced:false }; });
 
 let dayNum = 1;
-let order = [];       // 本日のキュー（word.id の配列）
+let order = [];
 let idx = 0;
 let hinted = false, answered = false;
 let log = [];
 
-// ===== localStorage 保存・読み込み =====
-const STORAGE_KEY = 'fr_fill_v1';
+const STORAGE_KEY = 'fr_fill_v2';
 
 function saveProgress() {
   try {
@@ -683,16 +641,20 @@ loadProgress();
 function normalize(s) {
   return s.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ');
 }
+
 function speak(text) {
   if (!window.speechSynthesis) return;
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'fr-FR'; u.rate = 0.9;
-  speechSynthesis.speak(u);
+  try {
+    speechSynthesis.cancel();
+    currentUtterance = new SpeechSynthesisUtterance(text);
+    currentUtterance.lang = 'fr-FR'; 
+    currentUtterance.rate = 0.9;
+    speechSynthesis.speak(currentUtterance);
+  } catch(e) {}
 }
+
 function wordById(id) { return WORDS.find(w => w.id === id); }
 
-// ===== デイリー出題ロジック =====
 function buildTodaySet() {
   const dueReviews = WORDS
     .filter(w => fillProgress[w.id].introduced && fillProgress[w.id].nextReview <= Date.now())
@@ -745,7 +707,7 @@ function renderDayInfo() {
       </div>
       <div class="quota-note">
         1日合計${DAILY_TOTAL}語・復習上限${REVIEW_CAP}語。<br>
-        正解するごとにレベルが上がり、復習間隔が延びます（1日・3日・1週間・1ヶ月・3ヶ月）。
+        正解するごとにレベルが上がり、復習間隔が延びます。
       </div>
       <button class="start-btn" onclick="startQueue()">学習を始める</button>
     </div>
@@ -770,39 +732,26 @@ function render() {
   const badgeLabel = isNew ? '新規' : `復習 ・ Lv.${prog.level}`;
 
   document.getElementById('main-area').innerHTML = `
-    <div class="level-badge ${badgeClass}">${badgeLabel}　(${idx+1}/${order.length})</div>
+    <div class="level-badge ${badgeClass}">${badgeLabel} (${idx+1}/${order.length})</div>
     <div class="card">
+      <div class="input-row">
+        <input type="text" class="answer-input" id="answer-input" placeholder="空欄に入る単語を入力" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+      </div>
+      <div class="hint-text" id="hint-text" style="display:none"></div>
+      <div class="action-row" id="btn-container">
+        <button class="hint-btn" id="hint-btn" onclick="showHint()">ヒントを見る</button>
+        <button class="submit-btn" onclick="submitAnswer()">判定する</button>
+      </div>
       <div class="pos-tag">${w.pos}</div>
       <div class="jp-sentence">${w.ex_jp}</div>
       <div class="fr-sentence">${sentenceHtml}</div>
-      <div class="input-row">
-        <input type="text" class="answer-input" id="answer-input" placeholder="空欄に入る単語を入力" autocomplete="off" autocapitalize="off" spellcheck="false">
-      </div>
-      <div class="accent-row" id="accent-row"></div>
-      <div class="hint-text" id="hint-text" style="display:none"></div>
-      <div class="action-row">
-        <button class="hint-btn" onclick="showHint()">ヒントを見る</button>
-        <button class="submit-btn" onclick="submitAnswer()">判定する</button>
-      </div>
       <div class="feedback" id="feedback"></div>
-      <button class="next-btn" id="next-btn" onclick="nextWord()">次へ →</button>
     </div>
   `;
-  const accents = ['é','è','ê','ë','à','â','ù','û','î','ï','ô','ö','ç','œ'];
-  document.getElementById('accent-row').innerHTML = accents.map(c =>
-    `<button type="button" class="accent-btn" onclick="insertChar('${c}')">${c}</button>`).join('');
-  // PCのみ自動フォーカス（スマホはタップで入力）
+
   if (!/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
     document.getElementById('answer-input').focus();
   }
-}
-
-function insertChar(c) {
-  const input = document.getElementById('answer-input');
-  const start = input.selectionStart, end = input.selectionEnd;
-  input.value = input.value.slice(0, start) + c + input.value.slice(end);
-  input.focus();
-  input.selectionStart = input.selectionEnd = start + c.length;
 }
 
 function showHint() {
@@ -820,6 +769,9 @@ function submitAnswer() {
   const w = wordById(wid);
   const prog = fillProgress[wid];
   const input = document.getElementById('answer-input');
+  
+  input.blur();
+
   const isCorrect = normalize(input.value) === normalize(w.blank);
 
   const before = prog.level;
@@ -839,15 +791,18 @@ function submitAnswer() {
 
   input.classList.add(isCorrect ? 'correct' : 'wrong');
   input.disabled = true;
-  saveProgress(); // 進捗をlocalStorageに保存
-  speak(w.ex_fr); // 回答後に音声再生
+  saveProgress();
+  speak(w.ex_fr);
 
   const fb = document.getElementById('feedback');
   fb.classList.add('visible', isCorrect ? 'correct' : 'wrong');
   fb.innerHTML = isCorrect
     ? `正解！ <div class="answer-reveal">${w.blank}</div>`
-    : `不正解 — 正解は <div class="answer-reveal">${w.blank}</div><div style="font-size:11px;margin-top:8px;color:var(--text-muted)">この単語は約10問後に再出題されます</div>`;
-  document.getElementById('next-btn').classList.add('visible');
+    : `不正解 — 正解は <div class="answer-reveal">${w.blank}</div>${!isCorrect ? '<div style="font-size:11px;margin-top:8px;color:var(--text-muted)">約10問後に再出題されます</div>' : ''}`;
+  
+  // 判定ボタンを「次へ」に動的切り替え
+  const container = document.getElementById('btn-container');
+  container.innerHTML = `<button class="next-action-btn" onclick="nextWord()">次へ →</button>`;
 }
 
 function nextWord() { idx++; render(); }
@@ -859,7 +814,7 @@ function renderDaySummary() {
   document.getElementById('main-area').innerHTML = `
     <div class="card summary">
       <div class="big">✓</div>
-      <h2>Day ${dayNum} 終了　${correctCount} / ${log.length} 問正解</h2>
+      <h2>Day ${dayNum} 終了 ${correctCount} / ${log.length} 問正解</h2>
       <div style="font-size:12px;color:var(--text-muted);margin-bottom:20px">習得済み：${masteredCount} / ${WORDS.length} 語</div>
       <table class="summary-table">
         <tr><th>単語</th><th>結果</th><th>レベル変化</th></tr>
@@ -881,26 +836,16 @@ function goMenu() {
   renderDayInfo();
 }
 
-function advanceDay() {
-  dayNum++;
-  saveProgress();
-  renderDayInfo();
-}
-
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter') {
     if (order[idx] === undefined) return;
     if (!answered) submitAnswer();
-    else {
-      const nb = document.getElementById('next-btn');
-      if (nb && nb.classList.contains('visible')) nextWord();
-    }
+    else nextWord();
   }
 });
 
 renderDayInfo();
 
-// ===== PWA Service Worker =====
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }
