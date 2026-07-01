@@ -43,6 +43,7 @@
   .start-btn { width:100%; padding:16px; background:var(--accent); color:#fff; border:none; border-radius:4px; font-family:'Playfair Display', serif; font-size:16px; cursor:pointer; }
   .start-btn:hover { background:var(--accent-dim); }
 
+  /* バッジエリア（最上部固定） */
   .level-badge { font-size:10px; letter-spacing:0.18em; text-transform:uppercase; padding:4px 12px; border-radius:20px; margin-bottom:22px; border:1px solid; }
   .level-badge.new { color:var(--accent); border-color:rgba(42,37,32,0.25); background:rgba(42,37,32,0.04); }
   .level-badge.review { color:var(--blue); border-color:rgba(42,90,144,0.35); background:rgba(42,90,144,0.06); }
@@ -50,28 +51,28 @@
   .card { width:100%; background:var(--card); border:1px solid var(--border); border-radius:4px; padding:44px 40px 36px; position:relative; display:flex; flex-direction:column; }
   .card::before { content:''; position:absolute; top:0; left:0; width:3px; height:100%; background:linear-gradient(180deg,var(--accent),transparent); border-radius:4px 0 0 4px; }
   
-  /* レイアウト順序制御 */
-  .pos-tag { order: 3; font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--text-muted); margin-bottom:18px; font-family:'Playfair Display', serif; font-style:italic; }
-  .jp-sentence { order: 4; font-size:22px; font-weight:300; color:var(--accent); line-height:1.6; margin-bottom:28px; letter-spacing:0.02em; }
-  .fr-sentence { order: 5; font-family:'Playfair Display', serif; font-size:22px; color:var(--text-dim); line-height:1.7; margin-bottom:22px; }
+  /* レイアウト順序の再定義（ご指定の配置に準拠） */
+  .pos-tag { order: 1; font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--text-muted); margin-bottom:12px; font-family:'Playfair Display', serif; font-style:italic; }
+  .jp-sentence { order: 2; font-size:22px; font-weight:300; color:var(--accent); line-height:1.6; margin-bottom:16px; letter-spacing:0.02em; }
+  .fr-sentence { order: 3; font-family:'Playfair Display', serif; font-size:22px; color:var(--text-dim); line-height:1.7; margin-bottom:32px; }
   .blank-slot { display:inline-block; min-width:90px; border-bottom:2px solid var(--accent); text-align:center; color:var(--text-muted); font-style:italic; padding:0 4px; }
 
-  /* 判定欄最上部配置用 */
-  .input-row { order: 1; display:flex; gap:8px; margin-bottom:14px; }
+  /* 入力・判定エリアを問題文の下に配置 */
+  .input-row { order: 4; display:flex; gap:8px; margin-bottom:14px; }
   .answer-input { flex:1; font-family:'Noto Serif JP', serif; font-size:16px; padding:12px 14px; border:1px solid var(--border); border-radius:4px; background:var(--surface); color:var(--text); outline:none; transition:border-color .2s; }
   .answer-input:focus { border-color:var(--accent-dim); }
   .answer-input.correct { border-color:var(--green); background:rgba(42,120,72,0.06); }
   .answer-input.wrong { border-color:var(--red); background:rgba(176,48,32,0.06); }
 
-  .action-row { order: 2; display:flex; gap:10px; margin-bottom:24px; }
+  .hint-text { order: 5; font-size:12px; color:var(--text-muted); margin-top:-4px; margin-bottom:14px; letter-spacing:0.04em; }
+
+  .action-row { order: 6; display:flex; gap:10px; margin-bottom:16px; }
   .hint-btn, .submit-btn, .next-action-btn { font-family:'Noto Serif JP', serif; font-size:13px; letter-spacing:0.05em; padding:12px 20px; border-radius:4px; cursor:pointer; border:1px solid var(--border); background:transparent; color:var(--text-dim); transition:all .18s; }
   .hint-btn:hover { border-color:var(--accent-dim); color:var(--accent); }
   .submit-btn, .next-action-btn { flex:1; background:var(--accent); color:#fff; border:none; text-align:center; }
   .submit-btn:hover, .next-action-btn:hover { background:var(--accent-dim); }
   
-  .hint-text { order: 1; font-size:12px; color:var(--text-muted); margin-top:-8px; margin-bottom:14px; letter-spacing:0.04em; }
-
-  .feedback { order: 6; display:none; margin-top:20px; padding:16px 20px; border-radius:4px; font-size:14px; line-height:1.7; }
+  .feedback { order: 7; display:none; padding:16px 20px; border-radius:4px; font-size:14px; line-height:1.7; margin-top:8px; }
   .feedback.visible { display:block; animation:fadeUp .3s ease; }
   .feedback.correct { background:rgba(42,120,72,0.06); border:1px solid rgba(42,120,72,0.3); color:var(--green); }
   .feedback.wrong { background:rgba(176,48,32,0.06); border:1px solid rgba(176,48,32,0.3); color:var(--red); }
@@ -102,7 +103,7 @@
     .card { padding: 28px 20px 24px; }
     .jp-sentence, .fr-sentence { font-size: 19px; }
     .answer-input { font-size: 18px; padding: 14px 12px; }
-    .action-row { flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    .action-row { flex-direction: column; gap: 10px; margin-bottom: 12px; }
     .hint-btn, .submit-btn, .next-action-btn { padding: 16px; font-size: 15px; width: 100%; }
     .day-info .big { font-size: 40px; }
     .start-btn { padding: 18px; font-size: 17px; }
@@ -130,6 +131,7 @@ const LEVEL_DAYS = [1, 3, 7, 30, 90];
 const DAY_MS = 24 * 60 * 60 * 1000;
 const REVIEW_CAP = 50;
 const DAILY_TOTAL = 100;
+  
 const WORDS = [
   { id:"n0001", fr:"femme", jp:"女、妻", pos:"名詞（女）", ex_fr:"C'est une femme indépendante.", ex_jp:"彼女は自立した女性です。", blank:"femme", masterOrder:1 },
   { id:"n0002", fr:"mère", jp:"母", pos:"名詞（女）", ex_fr:"Ma mère habite à Paris.", ex_jp:"私の母はパリに住んでいます。", blank:"mère", masterOrder:2 },
@@ -604,7 +606,6 @@ const WORDS = [
   { id:"n0471", fr:"si", jp:"もし、そんなに", pos:"接続詞/副詞", ex_fr:"S'il fait beau, nous sortirons.", ex_jp:"もし天気が良ければ、私たちは出かけます。", blank:"si", masterOrder:471 },
   { id:"n0472", fr:"généralement", jp:"一般的に", pos:"副詞", ex_fr:"Généralement, je dîne à 19 heures.", ex_jp:"一般的に、私は19時に夕食をとります。", blank:"généralement", masterOrder:472 }
 ];
-
 let currentUtterance = null;
 let fillProgress = {};
 WORDS.forEach(w => { fillProgress[w.id] = { level:0, nextReview:0, introduced:false }; });
@@ -734,6 +735,10 @@ function render() {
   document.getElementById('main-area').innerHTML = `
     <div class="level-badge ${badgeClass}">${badgeLabel} (${idx+1}/${order.length})</div>
     <div class="card">
+      <div class="pos-tag">${w.pos}</div>
+      <div class="jp-sentence">${w.ex_jp}</div>
+      <div class="fr-sentence">${sentenceHtml}</div>
+      
       <div class="input-row">
         <input type="text" class="answer-input" id="answer-input" placeholder="空欄に入る単語を入力" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
       </div>
@@ -742,9 +747,6 @@ function render() {
         <button class="hint-btn" id="hint-btn" onclick="showHint()">ヒントを見る</button>
         <button class="submit-btn" onclick="submitAnswer()">判定する</button>
       </div>
-      <div class="pos-tag">${w.pos}</div>
-      <div class="jp-sentence">${w.ex_jp}</div>
-      <div class="fr-sentence">${sentenceHtml}</div>
       <div class="feedback" id="feedback"></div>
     </div>
   `;
@@ -800,7 +802,7 @@ function submitAnswer() {
     ? `正解！ <div class="answer-reveal">${w.blank}</div>`
     : `不正解 — 正解は <div class="answer-reveal">${w.blank}</div>${!isCorrect ? '<div style="font-size:11px;margin-top:8px;color:var(--text-muted)">約10問後に再出題されます</div>' : ''}`;
   
-  // 判定ボタンを「次へ」に動的切り替え
+  // 判定完了後、ボタンエリアを「次へ」にダイナミック置換
   const container = document.getElementById('btn-container');
   container.innerHTML = `<button class="next-action-btn" onclick="nextWord()">次へ →</button>`;
 }
