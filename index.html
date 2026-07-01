@@ -788,8 +788,9 @@ function submitAnswer() {
   prog.introduced = true;
   log.push({ fr: w.fr, before, after, correct: isCorrect });
 
+
   input.classList.add(isCorrect ? 'correct' : 'wrong');
-  input.disabled = true;
+  
   saveProgress();
   speak(w.ex_fr);
 
@@ -800,7 +801,30 @@ function submitAnswer() {
     : `不正解 — 正解は <div class="answer-reveal">${w.blank}</div><div style="font-size:11px;margin-top:8px;color:var(--text-muted)">約10問後に再出題されます</div>`;
   
   const container = document.getElementById('btn-container');
-  container.innerHTML = `<button class="next-action-btn" onclick="nextWord()">次へ →</button>`;
+  
+  if (isCorrect) {
+    input.disabled = true;
+    container.innerHTML = `<button class="next-action-btn" onclick="nextWord()">次へ →</button>`;
+  } else {
+    // 不正解時は入力欄を空にし、正解をタイプさせる
+    input.value = '';
+    input.focus();
+    container.innerHTML = `<button class="next-action-btn" id="next-btn" onclick="nextWord()" disabled>正しい単語を入力して次へ</button>`;
+    
+    // 入力内容を監視
+    input.addEventListener('input', () => {
+      if (normalize(input.value) === normalize(w.blank)) {
+        document.getElementById('next-btn').disabled = false;
+        document.getElementById('next-btn').textContent = '次へ →';
+        input.classList.remove('wrong');
+        input.classList.add('correct');
+      } else {
+        document.getElementById('next-btn').disabled = true;
+      }
+    });
+  }
+
+
 }
 
 function nextWord() { idx++; render(); }
@@ -837,11 +861,19 @@ function goMenu() {
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter') {
     if (order[idx] === undefined) return;
-    if (!answered) submitAnswer();
-    else nextWord();
+    
+    if (!answered) {
+      submitAnswer();
+    } else {
+      // 判定済みの場合は、入力欄が正解と一致しているか確認してから進む
+      const w = wordById(order[idx]);
+      const input = document.getElementById('answer-input');
+      if (normalize(input.value) === normalize(w.blank)) {
+        nextWord();
+      }
+    }
   }
 });
-
 renderDayInfo();
 
 if ('serviceWorker' in navigator) {
